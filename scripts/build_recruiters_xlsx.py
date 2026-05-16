@@ -217,6 +217,18 @@ ALL_ROWS: list[Row] = [
     Row("TrendSource", "Browsable (login)", "https://www.thesourceagents.com/"),
     Row("User Insight", "Email-only", "https://www.shareyourinsights.com/"),
     Row("Videochat Network", "Email-only", "https://www.videochatnetwork.net/sign-up/"),
+
+    # --- Discovered in user's Gmail (last 12 months, not in OCH catalog) ---
+    Row("Pulse Labs", "Browsable (login)", "https://app.pulselabs.ai/"),
+    Row("Focus Group Finder", "Email-only", "https://focusgroups.org/"),
+    Row("AlphaBuzz", "Email-only", "https://alphabuzz.alchemer.com/"),
+    Row("EmCee Research", "Email-only", "https://emceeresearch.com/"),
+    Row("Thurs Recruiting", "Email-only", "https://thursrecruiting.com/"),
+    Row("Wynter", "Unclear", "https://wynter.com/panel"),
+    Row("AMG Research", "Email-only", "https://amgsurvey.com/"),
+    Row("TELUS Digital (research)", "Unclear", "https://www.telusinternational.com/"),
+    Row("VGM (playtests)", "Email-only", "https://vgm.co/"),
+    Row("CEC Surveys", "Email-only", "https://cecsurveys.com/"),
 ]
 
 
