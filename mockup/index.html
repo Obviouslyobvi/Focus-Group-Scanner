@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Focus Group Scanner — Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .pill { display:inline-flex; align-items:center; gap:.25rem; padding:.125rem .5rem; border-radius:9999px; font-size:.75rem; font-weight:500; }
+  .pill-new      { background:#dbeafe; color:#1d4ed8; }
+  .pill-applied  { background:#fef3c7; color:#92400e; }
+  .pill-qualified{ background:#dcfce7; color:#166534; }
+  .pill-done     { background:#e5e7eb; color:#374151; }
+  .pill-dismissed{ background:#fee2e2; color:#991b1b; }
+  .dot { width:.5rem; height:.5rem; border-radius:9999px; display:inline-block; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+<header class="border-b bg-white">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-md bg-slate-900 text-white grid place-items-center text-xs font-bold">FG</div>
+      <h1 class="font-semibold">Focus Group Scanner</h1>
+      <span class="text-xs text-slate-400 ml-2">mockup</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="px-3 py-1.5 text-sm rounded-md border bg-white hover:bg-slate-50">Scan email</button>
+      <button class="px-3 py-1.5 text-sm rounded-md border bg-white hover:bg-slate-50">Check sites</button>
+      <button class="px-3 py-1.5 text-sm rounded-md bg-slate-900 text-white hover:bg-slate-800">+ Add opportunity</button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-6 grid grid-cols-12 gap-6">
+
+  <!-- LEFT: Opportunity list -->
+  <section class="col-span-12 lg:col-span-8 space-y-4">
+
+    <!-- Status summary -->
+    <div class="grid grid-cols-5 gap-2 text-center text-sm">
+      <div class="bg-white border rounded-lg p-3"><div class="text-2xl font-semibold">7</div><div class="text-slate-500">New</div></div>
+      <div class="bg-white border rounded-lg p-3"><div class="text-2xl font-semibold">4</div><div class="text-slate-500">Applied</div></div>
+      <div class="bg-white border rounded-lg p-3"><div class="text-2xl font-semibold">2</div><div class="text-slate-500">Qualified</div></div>
+      <div class="bg-white border rounded-lg p-3"><div class="text-2xl font-semibold">9</div><div class="text-slate-500">Done</div></div>
+      <div class="bg-white border rounded-lg p-3"><div class="text-2xl font-semibold">3</div><div class="text-slate-500">Dismissed</div></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex items-center justify-between">
+      <div class="flex gap-1">
+        <button class="px-3 py-1 text-sm rounded-full bg-slate-900 text-white">All</button>
+        <button class="px-3 py-1 text-sm rounded-full hover:bg-slate-100">New</button>
+        <button class="px-3 py-1 text-sm rounded-full hover:bg-slate-100">Applied</button>
+        <button class="px-3 py-1 text-sm rounded-full hover:bg-slate-100">Qualified</button>
+        <button class="px-3 py-1 text-sm rounded-full hover:bg-slate-100">Done</button>
+        <button class="px-3 py-1 text-sm rounded-full hover:bg-slate-100">Dismissed</button>
+      </div>
+      <input type="search" placeholder="Search..." class="px-3 py-1.5 text-sm border rounded-md w-48 bg-white" />
+    </div>
+
+    <!-- Opportunity cards -->
+    <div class="bg-white border rounded-lg divide-y">
+
+      <article class="p-4 hover:bg-slate-50">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="pill pill-new">New</span>
+              <span class="text-xs text-slate-500">from Gmail · 2h ago</span>
+            </div>
+            <a href="#" class="font-medium hover:underline">Respondent — 60 min remote UX study (Figma users)</a>
+            <p class="text-sm text-slate-500 mt-1">Looking for designers who use Figma 3+ days/week. Screener takes ~5 min.</p>
+            <div class="flex flex-wrap gap-3 text-xs text-slate-500 mt-2">
+              <span>💰 <span class="text-slate-700 font-medium">$150</span></span>
+              <span>⏱ 60 min</span>
+              <span>📅 Closes May 22</span>
+              <span>🌐 respondent.io</span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 shrink-0">
+            <button class="px-3 py-1 text-xs rounded-md bg-slate-900 text-white">Open ↗</button>
+            <button class="px-3 py-1 text-xs rounded-md border">Mark applied</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="p-4 hover:bg-slate-50">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="pill pill-new">New</span>
+              <span class="text-xs text-slate-500">from User Interviews site · 6h ago</span>
+            </div>
+            <a href="#" class="font-medium hover:underline">User Interviews — Remote grocery shopping study</a>
+            <p class="text-sm text-slate-500 mt-1">Adults 25–55 who do most household grocery shopping online.</p>
+            <div class="flex flex-wrap gap-3 text-xs text-slate-500 mt-2">
+              <span>💰 <span class="text-slate-700 font-medium">$75</span></span>
+              <span>⏱ 45 min</span>
+              <span>📅 Rolling</span>
+              <span>🌐 userinterviews.com</span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 shrink-0">
+            <button class="px-3 py-1 text-xs rounded-md bg-slate-900 text-white">Open ↗</button>
+            <button class="px-3 py-1 text-xs rounded-md border">Mark applied</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="p-4 hover:bg-slate-50">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="pill pill-applied">Applied</span>
+              <span class="text-xs text-slate-500">manually added · yesterday</span>
+            </div>
+            <a href="#" class="font-medium hover:underline">Fieldwork Chicago — In-person beverage focus group</a>
+            <p class="text-sm text-slate-500 mt-1">Awaiting screener response. Scheduled call window Mon–Wed.</p>
+            <div class="flex flex-wrap gap-3 text-xs text-slate-500 mt-2">
+              <span>💰 <span class="text-slate-700 font-medium">$175</span></span>
+              <span>⏱ 90 min</span>
+              <span>📍 Chicago, IL</span>
+              <span>🌐 fieldwork.com</span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 shrink-0">
+            <button class="px-3 py-1 text-xs rounded-md bg-slate-900 text-white">Open ↗</button>
+            <button class="px-3 py-1 text-xs rounded-md border">Mark qualified</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="p-4 hover:bg-slate-50">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="pill pill-qualified">Qualified</span>
+              <span class="text-xs text-slate-500">from Gmail · 2 days ago</span>
+            </div>
+            <a href="#" class="font-medium hover:underline">dscout — Mobile diary study on streaming habits</a>
+            <p class="text-sm text-slate-500 mt-1">Selected! Need to complete 5 entries over 7 days starting May 20.</p>
+            <div class="flex flex-wrap gap-3 text-xs text-slate-500 mt-2">
+              <span>💰 <span class="text-slate-700 font-medium">$225</span></span>
+              <span>⏱ 7 days</span>
+              <span>📱 Mobile</span>
+              <span>🌐 dscout.com</span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 shrink-0">
+            <button class="px-3 py-1 text-xs rounded-md bg-slate-900 text-white">Open ↗</button>
+            <button class="px-3 py-1 text-xs rounded-md border">Mark done</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="p-4 hover:bg-slate-50 opacity-70">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="pill pill-dismissed">Dismissed</span>
+              <span class="text-xs text-slate-500">from Gmail · 3 days ago</span>
+            </div>
+            <a href="#" class="font-medium hover:underline line-through">Prolific — 5 min survey on weather apps</a>
+            <p class="text-sm text-slate-500 mt-1">Too low pay for the time required.</p>
+            <div class="flex flex-wrap gap-3 text-xs text-slate-500 mt-2">
+              <span>💰 <span class="text-slate-700 font-medium">£1.50</span></span>
+              <span>⏱ 5 min</span>
+              <span>🌐 prolific.com</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- RIGHT: Sources panel -->
+  <aside class="col-span-12 lg:col-span-4 space-y-4">
+
+    <div class="bg-white border rounded-lg">
+      <div class="px-4 py-3 border-b flex items-center justify-between">
+        <h2 class="font-medium">Watched sites</h2>
+        <button class="text-xs text-slate-500 hover:text-slate-900">+ Add</button>
+      </div>
+      <ul class="divide-y text-sm">
+        <li class="px-4 py-2.5 flex items-center justify-between">
+          <div>
+            <div class="font-medium">User Interviews</div>
+            <div class="text-xs text-slate-500">userinterviews.com/projects</div>
+          </div>
+          <span class="dot bg-green-500" title="Checked 1h ago, 1 new"></span>
+        </li>
+        <li class="px-4 py-2.5 flex items-center justify-between">
+          <div>
+            <div class="font-medium">Respondent</div>
+            <div class="text-xs text-slate-500">respondent.io/projects</div>
+          </div>
+          <span class="dot bg-slate-300" title="Checked 1h ago, no changes"></span>
+        </li>
+        <li class="px-4 py-2.5 flex items-center justify-between">
+          <div>
+            <div class="font-medium">Prolific</div>
+            <div class="text-xs text-slate-500">app.prolific.com/studies</div>
+          </div>
+          <span class="dot bg-green-500" title="Checked 1h ago, 3 new"></span>
+        </li>
+        <li class="px-4 py-2.5 flex items-center justify-between">
+          <div>
+            <div class="font-medium">dscout</div>
+            <div class="text-xs text-slate-500">dscout.com/scouts</div>
+          </div>
+          <span class="dot bg-slate-300"></span>
+        </li>
+        <li class="px-4 py-2.5 flex items-center justify-between">
+          <div>
+            <div class="font-medium">Fieldwork</div>
+            <div class="text-xs text-slate-500">fieldwork.com/studies</div>
+          </div>
+          <span class="dot bg-amber-500" title="Last check failed"></span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="bg-white border rounded-lg">
+      <div class="px-4 py-3 border-b flex items-center justify-between">
+        <h2 class="font-medium">Email scanning</h2>
+        <span class="text-xs text-slate-500">Gmail connected</span>
+      </div>
+      <div class="px-4 py-3 text-sm text-slate-600 space-y-2">
+        <div>Last scan: <span class="text-slate-900">2h ago</span></div>
+        <div>Found 3 new opportunities in last scan.</div>
+        <div class="text-xs text-slate-500">Keywords: focus group, paid study, survey, research participant…</div>
+        <button class="mt-1 w-full px-3 py-1.5 text-sm rounded-md border hover:bg-slate-50">Scan now</button>
+      </div>
+    </div>
+
+  </aside>
+
+</main>
+
+<footer class="max-w-6xl mx-auto px-6 py-8 text-xs text-slate-400">
+  Mockup only — no data is real, no buttons work. This is just to agree on the shape before we build it.
+</footer>
+
+</body>
+</html>
