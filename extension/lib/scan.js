@@ -120,16 +120,30 @@ export async function runScan({ onlyId } = {}) {
   const results = [];
   let newSinceLast = 0;
   for (const source of targets) {
-    if (!source.scraper) {
-      results.push({ id: source.id, name: source.name, status: "pending-extractor", count: 0 });
-      continue;
-    }
-    const beforeIds = Object.keys(await getStudies(source.id));
+    const beforeStudies = await getStudies(source.id);
+    const beforeActive = new Set(
+      Object.entries(beforeStudies)
+        .filter(([, s]) => s.isActive)
+        .map(([id]) => id)
+    );
     const r = await scrapeSource(source);
-    const afterIds = Object.keys(await getStudies(source.id));
-    const added = afterIds.filter((id) => !beforeIds.includes(id)).length;
+    const afterStudies = await getStudies(source.id);
+    const afterActive = new Set(
+      Object.entries(afterStudies)
+        .filter(([, s]) => s.isActive)
+        .map(([id]) => id)
+    );
+    const added = [...afterActive].filter((id) => !beforeActive.has(id)).length;
+    const removed = [...beforeActive].filter((id) => !afterActive.has(id)).length;
     newSinceLast += added;
-    results.push({ id: source.id, name: source.name, added, ...r });
+    results.push({
+      id: source.id,
+      name: source.name,
+      added,
+      removed,
+      changed: added + removed > 0,
+      ...r,
+    });
   }
   const finishedAt = Date.now();
   const { prunedStudies } = await pruneOldData(finishedAt);

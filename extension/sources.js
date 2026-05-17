@@ -125,7 +125,7 @@ export const SOURCES = [
     "id": "market_ease_market_eaze",
     "name": "Market-Ease (Market Eaze)",
     "type": "Browsable",
-    "url": "https://www.market-ease.com/about-the-respondent-hub",
+    "url": "https://www.market-ease.com/upcoming-studies",
     "domain": "market-ease.com",
     "scraper": null
   },

@@ -2,12 +2,26 @@
 // and handles messages from the popup and dashboard.
 
 import { runScan, testExtractorOnTab } from "./lib/scan.js";
-import { setSubmission, getSubmissions } from "./lib/storage.js";
+import { setSubmission, getSubmissions, getScanLog } from "./lib/storage.js";
 import { SOURCES } from "./sources.js";
 
-async function openAllBrowsable() {
-  const targets = SOURCES.filter((s) => s.type === "Browsable");
-  if (!targets.length) return { ok: true, count: 0 };
+async function openAllBrowsable({ onlyChanged = true } = {}) {
+  let targets = SOURCES.filter((s) => s.type === "Browsable");
+  let reason = "";
+  if (onlyChanged) {
+    const log = await getScanLog();
+    const last = log[0];
+    if (!last) {
+      return { ok: true, count: 0, reason: "no-scan" };
+    }
+    const changedIds = new Set(
+      last.sources.filter((s) => s.changed).map((s) => s.id)
+    );
+    targets = targets.filter((s) => changedIds.has(s.id));
+    reason = "no-changes";
+  }
+  if (!targets.length) return { ok: true, count: 0, reason };
+
   // Open all in parallel; tabs load in the background of the current window.
   const window_ = await chrome.windows.getCurrent();
   const tabs = await Promise.all(
@@ -98,7 +112,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         const result = await testExtractorOnTab(msg.tabId, msg.url);
         sendResponse({ ok: true, result });
       } else if (msg.type === "open-all-browsable") {
-        const result = await openAllBrowsable();
+        const result = await openAllBrowsable({ onlyChanged: msg.onlyChanged !== false });
         sendResponse(result);
       } else {
         sendResponse({ ok: false, error: "unknown message" });

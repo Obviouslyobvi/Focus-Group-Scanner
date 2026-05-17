@@ -38,19 +38,37 @@ $("scan-btn").addEventListener("click", async () => {
   });
 });
 
-$("open-all-btn").addEventListener("click", () => {
-  const btn = $("open-all-btn");
-  btn.disabled = true;
+function openTabsRequest(onlyChanged) {
+  const changedBtn = $("open-changed-btn");
+  const allBtn = $("open-all-btn");
+  changedBtn.disabled = true;
+  allBtn.disabled = true;
   $("status").textContent = "Opening tabs…";
-  chrome.runtime.sendMessage({ type: "open-all-browsable" }, (resp) => {
-    btn.disabled = false;
-    if (resp?.ok) {
-      $("status").textContent = `Opened ${resp.count} tabs in a group. Check your tab bar.`;
-    } else {
-      $("status").textContent = "Error: " + (resp?.error || "unknown");
+  chrome.runtime.sendMessage(
+    { type: "open-all-browsable", onlyChanged },
+    (resp) => {
+      changedBtn.disabled = false;
+      allBtn.disabled = false;
+      if (!resp?.ok) {
+        $("status").textContent = "Error: " + (resp?.error || "unknown");
+        return;
+      }
+      if (resp.count === 0) {
+        if (resp.reason === "no-scan")
+          $("status").textContent = "No scans yet. Run 'Scan now' first.";
+        else if (resp.reason === "no-changes")
+          $("status").textContent =
+            "No changes since last scan. Use 'Open all (force)' to open everything.";
+        else $("status").textContent = "Nothing to open.";
+      } else {
+        $("status").textContent = `Opened ${resp.count} tabs in a group.`;
+      }
     }
-  });
-});
+  );
+}
+
+$("open-changed-btn").addEventListener("click", () => openTabsRequest(true));
+$("open-all-btn").addEventListener("click", () => openTabsRequest(false));
 
 $("dash-btn").addEventListener("click", () => {
   chrome.tabs.create({ url: chrome.runtime.getURL("dashboard/dashboard.html") });
