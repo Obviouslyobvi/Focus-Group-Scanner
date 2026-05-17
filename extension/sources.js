@@ -322,14 +322,6 @@ export const SOURCES = [
     "scraper": null
   },
   {
-    "id": "prolific",
-    "name": "Prolific",
-    "type": "Browsable",
-    "url": "https://app.prolific.com/",
-    "domain": "app.prolific.com",
-    "scraper": null
-  },
-  {
     "id": "pulse_labs",
     "name": "Pulse Labs",
     "type": "Browsable",
