@@ -191,9 +191,9 @@ function renderSourcePanel() {
         : last
         ? `${last.count} listed${last.added ? `, +${last.added} new` : ""}`
         : "not scanned";
-      return `<div class="source"><div><span class="dot ${dotClass}"></span><span class="name">${escapeHtml(
-        src.name
-      )}</span></div><div class="muted">${escapeHtml(note)}</div></div>`;
+      return `<div class="source"><div><span class="dot ${dotClass}"></span><a class="name" href="${escapeHtml(
+        src.url
+      )}" target="_blank" rel="noopener">${escapeHtml(src.name)}</a></div><div class="muted">${escapeHtml(note)}</div></div>`;
     })
     .join("");
 

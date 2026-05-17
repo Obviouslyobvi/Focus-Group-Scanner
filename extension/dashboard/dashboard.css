@@ -115,7 +115,8 @@ main {
   font-size: 12px;
 }
 .source:last-child { border-bottom: 0; }
-.source .name { color: #0f172a; }
+.source .name { color: #0f172a; text-decoration: none; }
+.source .name:hover { text-decoration: underline; color: #1d4ed8; }
 .source .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle; }
 .dot-ok { background: #16a34a; }
 .dot-pending { background: #cbd5e1; }
