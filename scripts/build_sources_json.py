@@ -41,7 +41,9 @@ def main() -> None:
         reader = csv.DictReader(f)
         for r in reader:
             type_ = r["Type"].strip()
-            if not type_.startswith("Browsable"):
+            # Include anything scrapable: Browsable (web) plus App (mobile/native
+            # — listed for visibility, no scraper).
+            if not (type_.startswith("Browsable") or type_ == "App"):
                 continue
             url = r["URL"].strip()
             if not url:

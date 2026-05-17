@@ -50,6 +50,11 @@ async function scrapeSource(source) {
   try {
     tab = await chrome.tabs.create({ url: source.url, active: false });
     await waitForTabComplete(tab.id);
+    // Best-effort: dismiss common cookie / consent / newsletter popups so
+    // the extractor sees the actual content. Failures here are non-fatal.
+    await chrome.scripting
+      .executeScript({ target: { tabId: tab.id }, func: dismissCommonPopups })
+      .catch(() => {});
     const [{ result } = {}] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: extractor,
@@ -133,6 +138,50 @@ export async function runScan({ onlyId } = {}) {
 async function updateBadge(count) {
   await chrome.action.setBadgeText({ text: count > 0 ? String(count) : "" });
   await chrome.action.setBadgeBackgroundColor({ color: "#16a34a" });
+}
+
+// Runs in page context. Best-effort dismissal of common cookie / consent /
+// newsletter popups. Tries text-match on buttons first, then class/aria.
+function dismissCommonPopups() {
+  const TEXT_PATTERNS = [
+    /^accept( all)?( cookies)?$/i,
+    /^agree( and continue)?$/i,
+    /^i (accept|agree|understand)$/i,
+    /^got it$/i,
+    /^ok(ay)?$/i,
+    /^continue$/i,
+    /^close$/i,
+    /^dismiss$/i,
+    /^no thanks$/i,
+    /^maybe later$/i,
+  ];
+  const SELECTOR_HINTS = [
+    "[aria-label='Close']",
+    "[aria-label='close']",
+    "[aria-label='Dismiss']",
+    ".cookie-accept",
+    ".accept-cookies",
+    ".cc-allow",
+    ".cc-dismiss",
+    "#onetrust-accept-btn-handler",
+    "button.close",
+    ".close-modal",
+    ".modal-close",
+  ];
+  let clicked = 0;
+  const click = (el) => {
+    try {
+      el.click();
+      clicked++;
+    } catch {}
+  };
+  document.querySelectorAll("button, a, [role='button']").forEach((el) => {
+    const txt = (el.innerText || el.textContent || "").trim();
+    if (!txt || txt.length > 40) return;
+    if (TEXT_PATTERNS.some((re) => re.test(txt))) click(el);
+  });
+  SELECTOR_HINTS.forEach((sel) => document.querySelectorAll(sel).forEach(click));
+  return clicked;
 }
 
 function hostnameOf(url) {

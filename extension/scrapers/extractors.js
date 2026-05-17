@@ -13,31 +13,52 @@
 
 export function extractPRC() {
   // PRC Market Research — /upcomingprojects
-  // Typical pattern: a list of project cards/rows with title + incentive + dates.
-  const rows = document.querySelectorAll(
-    "[class*='project'], [class*='study'], article, .et_pb_blurb, tr"
-  );
+  // The page is flat text, not DOM-structured. Studies are separated by
+  // lines of ~~~~ characters. Each study chunk has lines like:
+  //   Topic: <title>
+  //   P###### (project code, optional, sometimes preceded by "Code:")
+  //   Who: <demographic>
+  //   When: <date range>
+  //   Where: <location>
+  //   Length: <duration>
+  //   Incentive: $<amount>
+  //   CLICK HERE  (a link to the screener)
+  const body = (document.body && document.body.innerText) || "";
+  // Split on lines containing a run of ~ characters (5+).
+  const chunks = body.split(/\r?\n\s*~{5,}[\s~]*\r?\n/);
   const out = [];
   const seen = new Set();
-  rows.forEach((el) => {
-    const text = el.innerText.trim();
-    if (!text || text.length < 20 || text.length > 800) return;
-    if (!/\$\d/.test(text)) return; // require a dollar amount
-    const title = (el.querySelector("h1,h2,h3,h4,h5,a,strong")?.innerText || text.split("\n")[0]).trim();
-    if (!title || title.length > 200) return;
-    const id = title.toLowerCase().replace(/\s+/g, "-").slice(0, 80);
+  // Try to associate each chunk with its CLICK HERE link by scanning the DOM.
+  const links = Array.from(document.querySelectorAll("a")).filter(
+    (a) => /click here/i.test(a.innerText || "") || /screener/i.test(a.innerText || "")
+  );
+  let linkIdx = 0;
+  chunks.forEach((chunk) => {
+    const text = chunk.trim();
+    if (!text) return;
+    const topic = text.match(/Topic:\s*([^\r\n]+)/i);
+    const code = text.match(/\b(P\d{4,}[A-Za-z0-9-]*)\b/);
+    const who = text.match(/Who:\s*([^\r\n]+)/i);
+    const when = text.match(/When:\s*([^\r\n]+)/i);
+    const where = text.match(/Where:\s*([^\r\n]+)/i);
+    const length = text.match(/Length:\s*([^\r\n]+)/i);
+    const incentive = text.match(/Incentive:\s*([^\r\n]+)/i);
+    // Require at least one strong signal (topic, code, or incentive).
+    if (!topic && !code && !incentive) return;
+    const title = topic ? topic[1].trim() : code ? code[1] : "Study";
+    const id = (code ? code[1] : title).toLowerCase().replace(/\s+/g, "-").slice(0, 80);
     if (seen.has(id)) return;
     seen.add(id);
-    const payMatch = text.match(/\$\s?[\d,]+(?:\.\d+)?/);
-    const durMatch = text.match(/\b(\d+)\s*(?:min|minutes|hour|hours|days|day)s?\b/i);
+    const link = links[linkIdx]?.href || location.href;
+    linkIdx += 1;
     out.push({
       externalId: id,
       title,
-      pay: payMatch ? payMatch[0] : "",
-      duration: durMatch ? durMatch[0] : "",
-      location: "",
-      studyDate: "",
-      url: el.querySelector("a")?.href || location.href,
+      pay: incentive ? incentive[1].trim() : "",
+      duration: length ? length[1].trim() : "",
+      location: where ? where[1].trim() : "",
+      studyDate: when ? when[1].trim() : "",
+      url: link,
     });
   });
   return out;
