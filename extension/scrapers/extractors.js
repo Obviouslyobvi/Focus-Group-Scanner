@@ -176,6 +176,11 @@ export function extractFFFocusGroup() {
 export function extractGeneric() {
   const out = [];
   const seen = new Set();
+  const seenTitles = new Set();
+  // Track DOM elements we've already taken a study from. If a later
+  // candidate is a descendant or ancestor of one we've already kept,
+  // skip it — that's a duplicate from nested containers.
+  const keptEls = [];
 
   function inChrome(el) {
     let p = el;
@@ -185,6 +190,16 @@ export function extractGeneric() {
       p = p.parentElement;
     }
     return false;
+  }
+  function overlapsKept(el) {
+    for (const k of keptEls) {
+      if (k === el) return true;
+      if (k.contains(el) || el.contains(k)) return true;
+    }
+    return false;
+  }
+  function normTitle(s) {
+    return s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
   }
 
   // Candidate containers: anything that's likely a per-study card or row.
@@ -211,8 +226,14 @@ export function extractGeneric() {
     /\b\d{1,2}\/\d{1,2}(?:\/\d{2,4})?\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2}\b/i;
   const incentiveLineRe = /^\s*(incentive|compensation|honorarium|pay|payment)\s*[:\-]/im;
 
-  elements.forEach((el) => {
+  // Iterate from deepest/smallest to largest so we prefer the most
+  // specific container when nested duplicates exist.
+  const sorted = [...elements].sort(
+    (a, b) => (a.innerText?.length || 0) - (b.innerText?.length || 0)
+  );
+  sorted.forEach((el) => {
     if (inChrome(el)) return;
+    if (overlapsKept(el)) return;
     const text = (el.innerText || "").trim();
     if (!text || text.length < 20 || text.length > 1800) return;
 
@@ -241,7 +262,11 @@ export function extractGeneric() {
     const idSeed = href ? href + "::" + title : title;
     const id = idSeed.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").slice(0, 120);
     if (!id || seen.has(id)) return;
+    const nt = normTitle(title);
+    if (seenTitles.has(nt)) return;
     seen.add(id);
+    seenTitles.add(nt);
+    keptEls.push(el);
 
     const durMatch = text.match(durRe);
     const dateMatch = text.match(dateRe);
