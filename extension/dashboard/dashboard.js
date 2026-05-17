@@ -70,6 +70,9 @@ function matchesFilters(s) {
     )
       return false;
   }
+  // Dismissed items only show when the user explicitly filters for them.
+  // Every other view hides dismissed.
+  if (state.status !== "dismissed" && sub?.status === "dismissed") return false;
   switch (state.status) {
     case "new":
       return s.firstSeenAt >= state.lastScanAt && state.lastScanAt > 0;
@@ -202,13 +205,13 @@ function renderSourcePanel() {
         : "dot-pending";
       let note;
       if (isApp) note = "app only";
-      else if (last?.status === "needs-api-key") note = "set API key";
+      else if (last?.status === "needs-api-key") note = "no scraper yet";
       else if (last?.status === "disabled") note = "LLM off";
       else if (last)
         note = `${last.count} listed${last.added ? `, +${last.added} new` : ""}${
           last.method === "llm" ? " (LLM)" : ""
         }`;
-      else note = isLLM ? "LLM (not scanned)" : "not scanned";
+      else note = isLLM ? "no scraper yet" : "not scanned";
       const toggle = isLLM
         ? `<button class="tiny" data-toggle-llm="${src.id}" title="${
             llmDisabled ? "Enable LLM" : "Disable LLM"
@@ -254,7 +257,6 @@ function escapeHtml(s) {
 
 function render() {
   $("last-scan").textContent = "Last scan: " + fmtTime(state.lastScanAt);
-  $("api-banner").style.display = state.hasApiKey ? "none" : "block";
   renderSummary();
   renderStudies();
   renderSourcePanel();
@@ -287,9 +289,5 @@ $("scan-btn").addEventListener("click", () => {
 });
 
 $("options-btn").addEventListener("click", () => chrome.runtime.openOptionsPage());
-$("open-options-link")?.addEventListener("click", (e) => {
-  e.preventDefault();
-  chrome.runtime.openOptionsPage();
-});
 
 load();
