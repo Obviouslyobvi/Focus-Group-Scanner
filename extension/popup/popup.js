@@ -38,6 +38,20 @@ $("scan-btn").addEventListener("click", async () => {
   });
 });
 
+$("open-all-btn").addEventListener("click", () => {
+  const btn = $("open-all-btn");
+  btn.disabled = true;
+  $("status").textContent = "Opening tabs…";
+  chrome.runtime.sendMessage({ type: "open-all-browsable" }, (resp) => {
+    btn.disabled = false;
+    if (resp?.ok) {
+      $("status").textContent = `Opened ${resp.count} tabs in a group. Check your tab bar.`;
+    } else {
+      $("status").textContent = "Error: " + (resp?.error || "unknown");
+    }
+  });
+});
+
 $("dash-btn").addEventListener("click", () => {
   chrome.tabs.create({ url: chrome.runtime.getURL("dashboard/dashboard.html") });
 });

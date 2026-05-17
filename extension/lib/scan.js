@@ -14,8 +14,13 @@ import {
   setLastScanAt,
   studyKey,
 } from "./storage.js";
-import { EXTRACTORS } from "../scrapers/extractors.js";
+import { EXTRACTORS, extractPageText } from "../scrapers/extractors.js";
 import { SOURCES } from "../sources.js";
+import {
+  extractStudiesViaClaude,
+  getApiKey,
+  isDisabled,
+} from "./llm.js";
 
 const TAB_LOAD_TIMEOUT_MS = 25_000;
 const POST_LOAD_DELAY_MS = 2_500;
@@ -44,8 +49,18 @@ function waitForTabComplete(tabId) {
 }
 
 async function scrapeSource(source) {
-  const extractor = EXTRACTORS[source.scraper];
-  if (!extractor) return { status: "pending-extractor", count: 0 };
+  // App-only sources (mobile / native) — can't scrape from a browser tab.
+  if (source.type === "App") return { status: "app-only", count: 0, method: "app" };
+
+  const handRolled = EXTRACTORS[source.scraper];
+  const willUseLLM = !handRolled;
+
+  if (willUseLLM) {
+    // Per-source LLM disable toggle.
+    if (await isDisabled(source.id)) return { status: "disabled", count: 0, method: "llm" };
+    // Need an API key.
+    if (!(await getApiKey())) return { status: "needs-api-key", count: 0, method: "llm" };
+  }
 
   let tab;
   try {
@@ -56,15 +71,35 @@ async function scrapeSource(source) {
     await chrome.scripting
       .executeScript({ target: { tabId: tab.id }, func: dismissCommonPopups })
       .catch(() => {});
-    const [{ result } = {}] = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: extractor,
-    });
-    const extracted = Array.isArray(result) ? result : [];
+
+    let extracted = [];
+    let method = "hand-rolled";
+    if (handRolled) {
+      const [{ result } = {}] = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: handRolled,
+      });
+      extracted = Array.isArray(result) ? result : [];
+    } else {
+      method = "llm";
+      const [{ result } = {}] = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: extractPageText,
+      });
+      const pageText = result || "";
+      if (!pageText) return { status: "no-content", count: 0, method };
+      extracted = await extractStudiesViaClaude(pageText, source);
+    }
+
     await mergeStudies(source, extracted);
-    return { status: "ok", count: extracted.length };
+    return { status: "ok", count: extracted.length, method };
   } catch (err) {
-    return { status: "error", count: 0, error: String(err?.message || err) };
+    return {
+      status: "error",
+      count: 0,
+      method: handRolled ? "hand-rolled" : "llm",
+      error: String(err?.message || err),
+    };
   } finally {
     if (tab?.id) {
       chrome.tabs.remove(tab.id).catch(() => {});

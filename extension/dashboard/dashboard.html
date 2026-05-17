@@ -10,9 +10,15 @@
   <h1>Focus Group Scanner</h1>
   <div class="actions">
     <button id="scan-btn">Scan now</button>
+    <button id="options-btn" class="secondary">Options</button>
     <span id="last-scan" class="muted"></span>
   </div>
 </header>
+
+<div id="api-banner" class="banner" style="display: none;">
+  No Anthropic API key set — 48 sources without hand-rolled scrapers won't
+  be scanned. <a href="#" id="open-options-link">Add a key in Options</a>.
+</div>
 
 <main>
   <section class="summary" id="summary"></section>

@@ -6,6 +6,7 @@ import {
   studyKey,
 } from "../lib/storage.js";
 import { SOURCES } from "../sources.js";
+import { getApiKey, isDisabled, setDisabled } from "../lib/llm.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -18,6 +19,8 @@ let state = {
   status: "all",
   source: "all",
   lastScanAt: 0,
+  hasApiKey: false,
+  disabledLLM: {},
 };
 
 const STATUSES = ["applied", "qualified", "done", "dismissed"];
@@ -32,17 +35,23 @@ function fmtTime(ms) {
 }
 
 async function load() {
-  const [studies, submissions, lastScanAt, scanLog] = await Promise.all([
+  const [studies, submissions, lastScanAt, scanLog, apiKey] = await Promise.all([
     getAllStudies(),
     getSubmissions(),
     getLastScanAt(),
     getScanLog(),
+    getApiKey(),
   ]);
   state.studies = studies;
   state.submissions = submissions;
   state.lastScanAt = lastScanAt;
   state.scanLog = scanLog;
   state.sources = SOURCES;
+  state.hasApiKey = !!apiKey;
+  state.disabledLLM = {};
+  for (const src of SOURCES) {
+    if (!src.scraper) state.disabledLLM[src.id] = await isDisabled(src.id);
+  }
   render();
 }
 
@@ -179,23 +188,48 @@ function renderSourcePanel() {
   $("source-list").innerHTML = state.sources
     .map((src) => {
       const last = lastBySource[src.id];
-      const dotClass = !src.scraper
+      const isApp = src.type === "App";
+      const isLLM = !src.scraper && !isApp;
+      const llmDisabled = state.disabledLLM[src.id];
+      const dotClass = isApp
         ? "dot-pending"
         : last?.status === "ok"
         ? "dot-ok"
-        : last?.status === "error"
+        : last?.status === "error" || last?.status === "no-content"
         ? "dot-error"
+        : last?.status === "needs-api-key"
+        ? "dot-warn"
         : "dot-pending";
-      const note = !src.scraper
-        ? "no extractor yet"
-        : last
-        ? `${last.count} listed${last.added ? `, +${last.added} new` : ""}`
-        : "not scanned";
+      let note;
+      if (isApp) note = "app only";
+      else if (last?.status === "needs-api-key") note = "set API key";
+      else if (last?.status === "disabled") note = "LLM off";
+      else if (last)
+        note = `${last.count} listed${last.added ? `, +${last.added} new` : ""}${
+          last.method === "llm" ? " (LLM)" : ""
+        }`;
+      else note = isLLM ? "LLM (not scanned)" : "not scanned";
+      const toggle = isLLM
+        ? `<button class="tiny" data-toggle-llm="${src.id}" title="${
+            llmDisabled ? "Enable LLM" : "Disable LLM"
+          }">${llmDisabled ? "off" : "on"}</button>`
+        : "";
       return `<div class="source"><div><span class="dot ${dotClass}"></span><a class="name" href="${escapeHtml(
         src.url
-      )}" target="_blank" rel="noopener">${escapeHtml(src.name)}</a></div><div class="muted">${escapeHtml(note)}</div></div>`;
+      )}" target="_blank" rel="noopener">${escapeHtml(src.name)}</a></div><div class="muted">${escapeHtml(
+        note
+      )} ${toggle}</div></div>`;
     })
     .join("");
+  $("source-list")
+    .querySelectorAll("[data-toggle-llm]")
+    .forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.toggleLlm;
+        await setDisabled(id, !state.disabledLLM[id]);
+        load();
+      })
+    );
 
   // Populate the source filter dropdown.
   const sel = $("filter-source");
@@ -220,6 +254,7 @@ function escapeHtml(s) {
 
 function render() {
   $("last-scan").textContent = "Last scan: " + fmtTime(state.lastScanAt);
+  $("api-banner").style.display = state.hasApiKey ? "none" : "block";
   renderSummary();
   renderStudies();
   renderSourcePanel();
@@ -249,6 +284,12 @@ $("scan-btn").addEventListener("click", () => {
     btn.textContent = "Scan now";
     load();
   });
+});
+
+$("options-btn").addEventListener("click", () => chrome.runtime.openOptionsPage());
+$("open-options-link")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  chrome.runtime.openOptionsPage();
 });
 
 load();

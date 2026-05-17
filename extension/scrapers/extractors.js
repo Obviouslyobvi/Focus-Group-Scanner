@@ -169,6 +169,33 @@ export function extractFFFocusGroup() {
   return out;
 }
 
+// Generic page-text extractor used by the LLM fallback path. Runs in the
+// page DOM, returns trimmed text from the most-content-y region.
+export function extractPageText() {
+  const candidates = ["main", "[role='main']", "#content", "#main", ".content", ".main", "article"];
+  let host = null;
+  for (const sel of candidates) {
+    const el = document.querySelector(sel);
+    if (el && (el.innerText || "").length > 200) {
+      host = el;
+      break;
+    }
+  }
+  if (!host) host = document.body;
+  let text = (host.innerText || "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+  // Also collect href + visible text from anchors in case studies are clickable
+  // tiles with little body text.
+  const links = Array.from(host.querySelectorAll("a"))
+    .map((a) => {
+      const t = (a.innerText || "").trim();
+      return t && a.href ? `${t} -> ${a.href}` : "";
+    })
+    .filter(Boolean)
+    .slice(0, 80);
+  if (links.length) text += "\n\nLINKS:\n" + links.join("\n");
+  return text;
+}
+
 // Registry of extractor functions, looked up by name from sources.json.
 export const EXTRACTORS = {
   extractPRC,

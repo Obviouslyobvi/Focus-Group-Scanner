@@ -3,6 +3,34 @@
 
 import { runScan, testExtractorOnTab } from "./lib/scan.js";
 import { setSubmission, getSubmissions } from "./lib/storage.js";
+import { SOURCES } from "./sources.js";
+
+async function openAllBrowsable() {
+  const targets = SOURCES.filter((s) => s.type === "Browsable");
+  if (!targets.length) return { ok: true, count: 0 };
+  // Open all in parallel; tabs load in the background of the current window.
+  const window_ = await chrome.windows.getCurrent();
+  const tabs = await Promise.all(
+    targets.map((s) =>
+      chrome.tabs.create({ url: s.url, active: false, windowId: window_.id })
+    )
+  );
+  const tabIds = tabs.map((t) => t.id).filter(Boolean);
+  if (!tabIds.length) return { ok: true, count: 0 };
+  try {
+    const groupId = await chrome.tabs.group({ tabIds });
+    const now = new Date();
+    const label = `Focus Group Sweep — ${now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
+    await chrome.tabGroups.update(groupId, { title: label, color: "blue", collapsed: false });
+  } catch (e) {
+    // Grouping is best-effort; tabs are still open even if grouping fails.
+    console.warn("tab grouping failed", e);
+  }
+  return { ok: true, count: tabIds.length };
+}
 
 const ALARM_NAME = "fgs-periodic-scan";
 const SCAN_INTERVAL_MIN = 12 * 60; // 12 hours
@@ -34,6 +62,9 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       } else if (msg.type === "test-current-tab") {
         const result = await testExtractorOnTab(msg.tabId, msg.url);
         sendResponse({ ok: true, result });
+      } else if (msg.type === "open-all-browsable") {
+        const result = await openAllBrowsable();
+        sendResponse(result);
       } else {
         sendResponse({ ok: false, error: "unknown message" });
       }

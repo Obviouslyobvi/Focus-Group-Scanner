@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Focus Group Scanner — Options</title>
+<style>
+  body { font: 14px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         color: #0f172a; background: #f8fafc; margin: 0; padding: 24px; }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 18px; margin: 0 0 16px; }
+  h2 { font-size: 14px; margin: 24px 0 8px; }
+  .card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+  label { display: block; font-size: 12px; color: #475569; margin-bottom: 4px; }
+  input[type="password"], input[type="text"] {
+    width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;
+    font-family: ui-monospace, "SF Mono", monospace; box-sizing: border-box;
+  }
+  button { border: 0; border-radius: 6px; background: #0f172a; color: white; padding: 7px 14px;
+           font-weight: 500; cursor: pointer; font-size: 13px; margin-right: 6px; }
+  button.secondary { background: white; color: #0f172a; border: 1px solid #cbd5e1; }
+  .row { display: flex; gap: 8px; margin-top: 12px; }
+  .status { font-size: 12px; color: #475569; margin-top: 8px; min-height: 16px; }
+  .status.ok { color: #166534; }
+  .status.err { color: #991b1b; }
+  .muted { color: #64748b; font-size: 12px; }
+  ul { margin: 4px 0 0 18px; padding: 0; font-size: 12px; color: #475569; }
+  code { font-family: ui-monospace, monospace; background: #f1f5f9; padding: 1px 4px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Focus Group Scanner — Options</h1>
+
+  <div class="card">
+    <h2>Anthropic API key</h2>
+    <p class="muted">
+      Required to extract studies from sites without a hand-rolled scraper. Get
+      a key from
+      <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>
+      and paste it below. The key stays in your browser
+      (<code>chrome.storage.local</code>) and is sent only to api.anthropic.com.
+    </p>
+    <label for="api-key">API key (starts with <code>sk-ant-</code>)</label>
+    <input id="api-key" type="password" placeholder="sk-ant-…" autocomplete="off" />
+    <div class="row">
+      <button id="save-btn">Save</button>
+      <button id="test-btn" class="secondary">Test</button>
+      <button id="clear-btn" class="secondary">Clear</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card">
+    <h2>What this enables</h2>
+    <ul>
+      <li>Sites with a hand-rolled scraper: always free, run as today.</li>
+      <li>All other Browsable sites: each scan grabs the page text and sends it
+        to Claude Haiku for structured extraction.</li>
+      <li>App-only sources (dscout, MeThinks, Mindswarms, Field Agent): not
+        scrapable from a browser; listed for visibility only.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Cost</h2>
+    <p class="muted">
+      Estimated <strong>$9–$15 / month</strong> at 2 scans/day across ~48
+      sites, using <code>claude-haiku-4-5</code>. You can also disable LLM
+      extraction per-source from the dashboard if a site consistently returns
+      garbage.
+    </p>
+  </div>
+</div>
+<script type="module" src="options.js"></script>
+</body>
+</html>
