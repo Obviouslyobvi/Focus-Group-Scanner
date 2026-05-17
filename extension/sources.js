@@ -253,8 +253,8 @@ export const SOURCES = [
     "id": "ath_power_consulting",
     "name": "ATH Power Consulting",
     "type": "Browsable",
-    "url": "https://experienceapc.com/getting-started",
-    "domain": "experienceapc.com",
+    "url": "https://www.athpower.com/ashop/",
+    "domain": "athpower.com",
     "scraper": null
   },
   {
