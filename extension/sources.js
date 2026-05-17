@@ -197,7 +197,7 @@ export const SOURCES = [
     "id": "take_part_in_research",
     "name": "Take Part in Research",
     "type": "Browsable",
-    "url": "https://www.takepartinresearch.com/?apply=yes",
+    "url": "https://www.takepartinresearch.com/welcome/",
     "domain": "takepartinresearch.com",
     "scraper": null
   },
