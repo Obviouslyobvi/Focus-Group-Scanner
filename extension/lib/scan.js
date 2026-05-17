@@ -15,13 +15,8 @@ import {
   studyKey,
   pruneOldData,
 } from "./storage.js";
-import { EXTRACTORS, extractPageText } from "../scrapers/extractors.js";
+import { EXTRACTORS } from "../scrapers/extractors.js";
 import { SOURCES } from "../sources.js";
-import {
-  extractStudiesViaClaude,
-  getApiKey,
-  isDisabled,
-} from "./llm.js";
 
 const TAB_LOAD_TIMEOUT_MS = 25_000;
 const POST_LOAD_DELAY_MS = 2_500;
@@ -54,14 +49,8 @@ async function scrapeSource(source) {
   if (source.type === "App") return { status: "app-only", count: 0, method: "app" };
 
   const handRolled = EXTRACTORS[source.scraper];
-  const willUseLLM = !handRolled;
-
-  if (willUseLLM) {
-    // Per-source LLM disable toggle.
-    if (await isDisabled(source.id)) return { status: "disabled", count: 0, method: "llm" };
-    // Need an API key.
-    if (!(await getApiKey())) return { status: "needs-api-key", count: 0, method: "llm" };
-  }
+  const extractor = handRolled || EXTRACTORS.extractGeneric;
+  const method = handRolled ? "hand-rolled" : "generic";
 
   let tab;
   try {
@@ -73,32 +62,18 @@ async function scrapeSource(source) {
       .executeScript({ target: { tabId: tab.id }, func: dismissCommonPopups })
       .catch(() => {});
 
-    let extracted = [];
-    let method = "hand-rolled";
-    if (handRolled) {
-      const [{ result } = {}] = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: handRolled,
-      });
-      extracted = Array.isArray(result) ? result : [];
-    } else {
-      method = "llm";
-      const [{ result } = {}] = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: extractPageText,
-      });
-      const pageText = result || "";
-      if (!pageText) return { status: "no-content", count: 0, method };
-      extracted = await extractStudiesViaClaude(pageText, source);
-    }
-
+    const [{ result } = {}] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: extractor,
+    });
+    const extracted = Array.isArray(result) ? result : [];
     await mergeStudies(source, extracted);
     return { status: "ok", count: extracted.length, method };
   } catch (err) {
     return {
       status: "error",
       count: 0,
-      method: handRolled ? "hand-rolled" : "llm",
+      method,
       error: String(err?.message || err),
     };
   } finally {

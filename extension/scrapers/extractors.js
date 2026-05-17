@@ -169,6 +169,97 @@ export function extractFFFocusGroup() {
   return out;
 }
 
+// Heuristic generic extractor. Used as the fallback for sources without a
+// hand-rolled scraper. Looks for repeated DOM elements that contain both
+// a price marker ($XX, £XX, €XX, "Incentive: XX") and a heading-ish title,
+// avoiding navigation / header / footer regions.
+export function extractGeneric() {
+  const out = [];
+  const seen = new Set();
+
+  function inChrome(el) {
+    let p = el;
+    while (p && p !== document.body) {
+      const t = p.tagName;
+      if (t === "HEADER" || t === "NAV" || t === "FOOTER" || t === "ASIDE") return true;
+      p = p.parentElement;
+    }
+    return false;
+  }
+
+  // Candidate containers: anything that's likely a per-study card or row.
+  const selectors = [
+    "article",
+    "[class*='project']",
+    "[class*='study']",
+    "[class*='post-']",
+    "[class*='card']",
+    "[class*='listing']",
+    "[class*='item']",
+    "[class*='opportunity']",
+    "[class*='gig']",
+    ".et_pb_blurb",
+    ".et_pb_text",
+    "li",
+    "tr",
+  ];
+  const elements = document.querySelectorAll(selectors.join(","));
+
+  const priceRe = /(\$|£|€)\s?[\d,]+(?:\.\d{1,2})?/;
+  const durRe = /\b\d+\s*(min|minutes|mins|hour|hours|hr|hrs|days|day|week|weeks)\b/i;
+  const dateRe =
+    /\b\d{1,2}\/\d{1,2}(?:\/\d{2,4})?\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2}\b/i;
+  const incentiveLineRe = /^\s*(incentive|compensation|honorarium|pay|payment)\s*[:\-]/im;
+
+  elements.forEach((el) => {
+    if (inChrome(el)) return;
+    const text = (el.innerText || "").trim();
+    if (!text || text.length < 20 || text.length > 1800) return;
+
+    const priceMatch = text.match(priceRe);
+    const incentiveMatch = text.match(incentiveLineRe);
+    if (!priceMatch && !incentiveMatch) return;
+
+    // Title preference: explicit heading, then strong, then anchor text,
+    // then first non-empty line.
+    const titleEl = el.querySelector(
+      "h1, h2, h3, h4, h5, .title, .entry-title, .project-title, .study-title, strong"
+    );
+    let title = (titleEl?.innerText || "").trim();
+    if (!title) {
+      const linkEl = el.querySelector("a[href]");
+      title = (linkEl?.innerText || "").trim();
+    }
+    if (!title) title = text.split("\n").map((s) => s.trim()).find(Boolean) || "";
+    title = title.replace(/\s+/g, " ").trim();
+    if (!title || title.length < 4 || title.length > 250) return;
+    // Skip generic UI labels.
+    if (/^(apply|click here|register|sign up|learn more|read more)$/i.test(title)) return;
+
+    const linkEl = el.querySelector("a[href]");
+    const href = linkEl?.href || "";
+    const idSeed = href ? href + "::" + title : title;
+    const id = idSeed.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").slice(0, 120);
+    if (!id || seen.has(id)) return;
+    seen.add(id);
+
+    const durMatch = text.match(durRe);
+    const dateMatch = text.match(dateRe);
+
+    out.push({
+      externalId: id,
+      title,
+      pay: priceMatch ? priceMatch[0] : (incentiveMatch ? incentiveMatch[0].split(/[:\-]/).slice(1).join("").trim() : ""),
+      duration: durMatch ? durMatch[0] : "",
+      studyDate: dateMatch ? dateMatch[0] : "",
+      location: "",
+      url: href || location.href,
+    });
+  });
+
+  return out;
+}
+
 // Generic page-text extractor used by the LLM fallback path. Runs in the
 // page DOM, returns trimmed text from the most-content-y region.
 export function extractPageText() {
@@ -197,10 +288,13 @@ export function extractPageText() {
 }
 
 // Registry of extractor functions, looked up by name from sources.json.
+// extractGeneric is the fallback used for any source without a hand-rolled
+// scraper assigned.
 export const EXTRACTORS = {
   extractPRC,
   extractBecomeAThinker,
   extractDaisyMae,
   extractAccelerant,
   extractFFFocusGroup,
+  extractGeneric,
 };
