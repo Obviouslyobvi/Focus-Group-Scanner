@@ -1,7 +1,7 @@
 // Background service worker. Schedules scans via chrome.alarms (every 12h)
 // and handles messages from the popup and dashboard.
 
-import { runScan } from "./lib/scan.js";
+import { runScan, testExtractorOnTab } from "./lib/scan.js";
 import { setSubmission, getSubmissions } from "./lib/storage.js";
 
 const ALARM_NAME = "fgs-periodic-scan";
@@ -31,6 +31,9 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         sendResponse({ ok: true });
       } else if (msg.type === "get-submissions") {
         sendResponse({ ok: true, submissions: await getSubmissions() });
+      } else if (msg.type === "test-current-tab") {
+        const result = await testExtractorOnTab(msg.tabId, msg.url);
+        sendResponse({ ok: true, result });
       } else {
         sendResponse({ ok: false, error: "unknown message" });
       }

@@ -135,4 +135,55 @@ async function updateBadge(count) {
   await chrome.action.setBadgeBackgroundColor({ color: "#16a34a" });
 }
 
+function hostnameOf(url) {
+  try {
+    let h = new URL(url).hostname.toLowerCase();
+    if (h.startsWith("www.")) h = h.slice(4);
+    return h;
+  } catch {
+    return "";
+  }
+}
+
+function parentDomain(host) {
+  if (!host) return "";
+  const parts = host.split(".");
+  if (parts.length <= 2) return host;
+  return parts.slice(-2).join(".");
+}
+
+export async function findSourceForUrl(url) {
+  const sources = await loadSources();
+  const host = hostnameOf(url);
+  const parent = parentDomain(host);
+  // prefer exact match, then parent-domain match
+  return (
+    sources.find((s) => hostnameOf(s.url) === host) ||
+    sources.find((s) => parentDomain(hostnameOf(s.url)) === parent) ||
+    null
+  );
+}
+
+export async function testExtractorOnTab(tabId, url) {
+  const source = await findSourceForUrl(url);
+  if (!source) {
+    return { sourceName: "", scraper: "", count: 0, samples: [] };
+  }
+  const extractor = EXTRACTORS[source.scraper];
+  if (!extractor) {
+    return { sourceName: source.name, scraper: "", count: 0, samples: [] };
+  }
+  const [{ result } = {}] = await chrome.scripting.executeScript({
+    target: { tabId },
+    func: extractor,
+  });
+  const items = Array.isArray(result) ? result : [];
+  return {
+    sourceName: source.name,
+    scraper: source.scraper,
+    count: items.length,
+    samples: items.slice(0, 8),
+  };
+}
+
 export { loadSources };

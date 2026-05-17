@@ -43,4 +43,26 @@ $("dash-btn").addEventListener("click", () => {
   chrome.tabs.create({ url: chrome.runtime.getURL("dashboard/dashboard.html") });
 });
 
+$("test-btn").addEventListener("click", async () => {
+  const out = $("test-output");
+  out.style.display = "block";
+  out.textContent = "Testing on current tab…";
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  chrome.runtime.sendMessage({ type: "test-current-tab", tabId: tab.id, url: tab.url }, (resp) => {
+    if (!resp?.ok) {
+      out.textContent = "Error: " + (resp?.error || "unknown");
+      return;
+    }
+    const r = resp.result;
+    const lines = [
+      `Matched source: ${r.sourceName || "(no match — open a recruiter URL first)"}`,
+      `Extractor: ${r.scraper || "(none registered for this domain)"}`,
+      `Extracted: ${r.count} item(s)`,
+      "",
+      ...r.samples.map((s, i) => `${i + 1}. ${s.title || "(no title)"}  [${s.pay || "?"}]`),
+    ];
+    out.textContent = lines.join("\n");
+  });
+});
+
 refresh();
