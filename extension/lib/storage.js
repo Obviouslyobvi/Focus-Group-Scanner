@@ -69,11 +69,13 @@ export function studyKey(sourceId, externalId) {
   return `${sourceId}::${externalId}`;
 }
 
-// Rolling retention: drop studies that haven't been seen for N days
-// AND have no associated submission (so applied/qualified/done studies
-// stick around regardless of age). The submission row itself is also
-// pruned when no study refers to it and it's older than the window.
+// Rolling retention: drop studies that haven't been seen for N days unless
+// they have a *valuable* submission status (applied / qualified / done /
+// paid). Dismissed submissions are NOT preserved — dismissing means "I
+// rejected this," not "remember it forever." When we prune a study, we
+// also drop any orphaned submission row so storage doesn't bloat.
 const RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+const KEEP_STATUSES = new Set(["applied", "qualified", "done", "paid"]);
 
 export async function pruneOldData(now = Date.now()) {
   const cutoff = now - RETENTION_MS;
@@ -81,20 +83,34 @@ export async function pruneOldData(now = Date.now()) {
   const all = await chrome.storage.local.get(null);
   let prunedStudies = 0;
   const toSet = {};
+  const liveKeys = new Set();
   for (const [key, value] of Object.entries(all)) {
     if (!key.startsWith(STUDY_PREFIX)) continue;
     const kept = {};
     for (const [extId, row] of Object.entries(value)) {
       const sk = studyKey(row.sourceId, row.externalId);
-      const hasSub = !!submissions[sk];
-      if (row.lastSeenAt < cutoff && !hasSub) {
+      const sub = submissions[sk];
+      const valuable = sub && KEEP_STATUSES.has(sub.status);
+      if (row.lastSeenAt < cutoff && !valuable) {
         prunedStudies++;
         continue;
       }
       kept[extId] = row;
+      liveKeys.add(sk);
     }
     toSet[key] = kept;
   }
+  // Drop submissions whose study is gone (including dismissed-only entries).
+  let prunedSubmissions = 0;
+  const keptSubs = {};
+  for (const [sk, sub] of Object.entries(submissions)) {
+    if (liveKeys.has(sk) || KEEP_STATUSES.has(sub.status)) {
+      keptSubs[sk] = sub;
+    } else {
+      prunedSubmissions++;
+    }
+  }
+  toSet.submissions = keptSubs;
   if (Object.keys(toSet).length) await chrome.storage.local.set(toSet);
-  return { prunedStudies };
+  return { prunedStudies, prunedSubmissions };
 }
