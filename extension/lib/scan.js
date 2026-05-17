@@ -13,6 +13,7 @@ import {
   appendScanLog,
   setLastScanAt,
   studyKey,
+  pruneOldData,
 } from "./storage.js";
 import { EXTRACTORS, extractPageText } from "../scrapers/extractors.js";
 import { SOURCES } from "../sources.js";
@@ -156,7 +157,14 @@ export async function runScan({ onlyId } = {}) {
     results.push({ id: source.id, name: source.name, added, ...r });
   }
   const finishedAt = Date.now();
-  const entry = { startedAt, finishedAt, sources: results, newSinceLast };
+  const { prunedStudies } = await pruneOldData(finishedAt);
+  const entry = {
+    startedAt,
+    finishedAt,
+    sources: results,
+    newSinceLast,
+    prunedStudies,
+  };
   await appendScanLog(entry);
   await setLastScanAt(finishedAt);
   await updateBadge(newSinceLast);

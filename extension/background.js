@@ -34,12 +34,47 @@ async function openAllBrowsable() {
 
 const ALARM_NAME = "fgs-periodic-scan";
 const SCAN_INTERVAL_MIN = 12 * 60; // 12 hours
+const VISIBILITY_FIX_ID = "visibility-fix";
+
+async function registerVisibilityFix() {
+  // Build a unique URL-pattern match list from the SOURCES we track.
+  const patterns = new Set();
+  for (const s of SOURCES) {
+    if (s.type !== "Browsable" && s.type !== "Unclear") continue;
+    try {
+      const u = new URL(s.url);
+      patterns.add(`${u.protocol}//${u.hostname}/*`);
+    } catch {}
+  }
+  if (patterns.size === 0) return;
+
+  try {
+    await chrome.scripting.unregisterContentScripts({ ids: [VISIBILITY_FIX_ID] });
+  } catch {
+    // wasn't registered yet — fine
+  }
+  await chrome.scripting.registerContentScripts([
+    {
+      id: VISIBILITY_FIX_ID,
+      matches: [...patterns],
+      js: ["content-scripts/visibility-fix.js"],
+      runAt: "document_start",
+      world: "MAIN",
+      persistAcrossSessions: true,
+    },
+  ]);
+}
 
 chrome.runtime.onInstalled.addListener(async () => {
   await chrome.alarms.create(ALARM_NAME, {
     delayInMinutes: 1,
     periodInMinutes: SCAN_INTERVAL_MIN,
   });
+  await registerVisibilityFix();
+});
+
+chrome.runtime.onStartup.addListener(async () => {
+  await registerVisibilityFix();
 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {

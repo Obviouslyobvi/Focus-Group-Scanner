@@ -68,3 +68,33 @@ export async function setLastScanAt(ts) {
 export function studyKey(sourceId, externalId) {
   return `${sourceId}::${externalId}`;
 }
+
+// Rolling retention: drop studies that haven't been seen for N days
+// AND have no associated submission (so applied/qualified/done studies
+// stick around regardless of age). The submission row itself is also
+// pruned when no study refers to it and it's older than the window.
+const RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+
+export async function pruneOldData(now = Date.now()) {
+  const cutoff = now - RETENTION_MS;
+  const submissions = await getSubmissions();
+  const all = await chrome.storage.local.get(null);
+  let prunedStudies = 0;
+  const toSet = {};
+  for (const [key, value] of Object.entries(all)) {
+    if (!key.startsWith(STUDY_PREFIX)) continue;
+    const kept = {};
+    for (const [extId, row] of Object.entries(value)) {
+      const sk = studyKey(row.sourceId, row.externalId);
+      const hasSub = !!submissions[sk];
+      if (row.lastSeenAt < cutoff && !hasSub) {
+        prunedStudies++;
+        continue;
+      }
+      kept[extId] = row;
+    }
+    toSet[key] = kept;
+  }
+  if (Object.keys(toSet).length) await chrome.storage.local.set(toSet);
+  return { prunedStudies };
+}
