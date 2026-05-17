@@ -1,4 +1,5 @@
 import { getLastScanAt } from "../lib/storage.js";
+import { SOURCES } from "../sources.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -16,10 +17,8 @@ function fmtTime(ms) {
 async function refresh() {
   const lastScanAt = await getLastScanAt();
   $("last-scan").textContent = fmtTime(lastScanAt);
-  const res = await fetch(chrome.runtime.getURL("sources.json"));
-  const sources = await res.json();
-  $("source-count").textContent = sources.length;
-  $("scraper-count").textContent = sources.filter((s) => s.scraper).length;
+  $("source-count").textContent = SOURCES.length;
+  $("scraper-count").textContent = SOURCES.filter((s) => s.scraper).length;
 }
 
 $("scan-btn").addEventListener("click", async () => {

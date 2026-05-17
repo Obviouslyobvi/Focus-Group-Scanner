@@ -13,7 +13,8 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parent.parent
 CSV_PATH = ROOT / "docs" / "recruiters.csv"
-OUT_PATH = ROOT / "extension" / "sources.json"
+JSON_PATH = ROOT / "extension" / "sources.json"
+JS_PATH = ROOT / "extension" / "sources.js"
 
 
 def slugify(name: str) -> str:
@@ -75,11 +76,18 @@ def main() -> None:
         if r["id"] in SCRAPER_OVERRIDES:
             r["scraper"] = SCRAPER_OVERRIDES[r["id"]]
 
-    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUT_PATH.write_text(json.dumps(rows, indent=2) + "\n")
+    JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
+    JSON_PATH.write_text(json.dumps(rows, indent=2) + "\n")
+    # Also emit a JS module so background/dashboard can import the data
+    # directly without runtime fetch (MV3 service-worker friendly).
+    JS_PATH.write_text(
+        "// Auto-generated from docs/recruiters.csv via scripts/build_sources_json.py.\n"
+        "// Edit recruiters.csv, then re-run that script.\n"
+        f"export const SOURCES = {json.dumps(rows, indent=2)};\n"
+    )
 
     scrape_ready = sum(1 for r in rows if r["scraper"])
-    print(f"Wrote {OUT_PATH}")
+    print(f"Wrote {JSON_PATH} and {JS_PATH}")
     print(f"  Total browsable sources: {len(rows)}")
     print(f"  With hand-rolled scraper: {scrape_ready}")
     print(f"  Pending extractor:        {len(rows) - scrape_ready}")

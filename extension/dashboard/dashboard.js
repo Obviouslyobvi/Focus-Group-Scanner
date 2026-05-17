@@ -5,6 +5,7 @@ import {
   getScanLog,
   studyKey,
 } from "../lib/storage.js";
+import { SOURCES } from "../sources.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -31,18 +32,17 @@ function fmtTime(ms) {
 }
 
 async function load() {
-  const [studies, submissions, lastScanAt, scanLog, sourcesRes] = await Promise.all([
+  const [studies, submissions, lastScanAt, scanLog] = await Promise.all([
     getAllStudies(),
     getSubmissions(),
     getLastScanAt(),
     getScanLog(),
-    fetch(chrome.runtime.getURL("sources.json")).then((r) => r.json()),
   ]);
   state.studies = studies;
   state.submissions = submissions;
   state.lastScanAt = lastScanAt;
   state.scanLog = scanLog;
-  state.sources = sourcesRes;
+  state.sources = SOURCES;
   render();
 }
 

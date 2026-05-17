@@ -15,14 +15,15 @@ import {
   studyKey,
 } from "./storage.js";
 import { EXTRACTORS } from "../scrapers/extractors.js";
+import { SOURCES } from "../sources.js";
 
 const TAB_LOAD_TIMEOUT_MS = 25_000;
 const POST_LOAD_DELAY_MS = 2_500;
 
 async function loadSources() {
-  const url = chrome.runtime.getURL("sources.json");
-  const res = await fetch(url);
-  return res.json();
+  // Sources are bundled as a JS module to sidestep MV3 service-worker fetch
+  // quirks. The build script keeps sources.json and sources.js in sync.
+  return SOURCES;
 }
 
 function waitForTabComplete(tabId) {
