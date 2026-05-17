@@ -1,0 +1,458 @@
+[
+  {
+    "id": "accelerant_research",
+    "name": "Accelerant Research",
+    "type": "Browsable",
+    "url": "https://www.accelerantresearch.com/availableresearch",
+    "domain": "accelerantresearch.com",
+    "scraper": "extractAccelerant"
+  },
+  {
+    "id": "ann_michaels_ishopforyou",
+    "name": "Ann Michaels / iShopForYou",
+    "type": "Browsable (login)",
+    "url": "https://ishopforyou.com/evaluator-login",
+    "domain": "ishopforyou.com",
+    "scraper": null
+  },
+  {
+    "id": "apex_focus_group",
+    "name": "Apex Focus Group",
+    "type": "Browsable",
+    "url": "https://apexfocusgroup.com/",
+    "domain": "apexfocusgroup.com",
+    "scraper": null
+  },
+  {
+    "id": "ascendancy_research",
+    "name": "Ascendancy Research",
+    "type": "Browsable",
+    "url": "https://studies.ascendresearch.com/",
+    "domain": "studies.ascendresearch.com",
+    "scraper": null
+  },
+  {
+    "id": "ath_power_consulting",
+    "name": "ATH Power Consulting",
+    "type": "Browsable (login)",
+    "url": "https://experienceapc.com/getting-started",
+    "domain": "experienceapc.com",
+    "scraper": null
+  },
+  {
+    "id": "become_a_thinker",
+    "name": "Become A Thinker",
+    "type": "Browsable",
+    "url": "https://becomeathinker.com/upcoming-studies/",
+    "domain": "becomeathinker.com",
+    "scraper": "extractBecomeAThinker"
+  },
+  {
+    "id": "bestmark",
+    "name": "BestMark",
+    "type": "Browsable (login)",
+    "url": "https://secure.bestmark.com/public/application/appstart.aspx",
+    "domain": "secure.bestmark.com",
+    "scraper": null
+  },
+  {
+    "id": "cara_casting",
+    "name": "Cara Casting",
+    "type": "Browsable",
+    "url": "https://jobs.caracasting.com/",
+    "domain": "jobs.caracasting.com",
+    "scraper": null
+  },
+  {
+    "id": "connexion_research",
+    "name": "ConneXion Research",
+    "type": "Browsable",
+    "url": "https://jointheconnexion.com/current-projects/",
+    "domain": "jointheconnexion.com",
+    "scraper": null
+  },
+  {
+    "id": "curion",
+    "name": "Curion",
+    "type": "Browsable (login)",
+    "url": "https://curionpanelist.com/portal/default",
+    "domain": "curionpanelist.com",
+    "scraper": null
+  },
+  {
+    "id": "daisy_mae_research",
+    "name": "Daisy Mae Research",
+    "type": "Browsable",
+    "url": "https://daisymaeresearch.com/projects/",
+    "domain": "daisymaeresearch.com",
+    "scraper": "extractDaisyMae"
+  },
+  {
+    "id": "dscout",
+    "name": "dscout",
+    "type": "Browsable (mobile app)",
+    "url": "https://dscout.com",
+    "domain": "dscout.com",
+    "scraper": null
+  },
+  {
+    "id": "ff_focus_group",
+    "name": "FF Focus Group",
+    "type": "Browsable",
+    "url": "https://www.fffocusgroup.com/current-projects/",
+    "domain": "fffocusgroup.com",
+    "scraper": "extractFFFocusGroup"
+  },
+  {
+    "id": "field_agent_storesight",
+    "name": "Field Agent / Storesight",
+    "type": "Browsable (login)",
+    "url": "https://app.fieldagent.net/",
+    "domain": "app.fieldagent.net",
+    "scraper": null
+  },
+  {
+    "id": "field_voices",
+    "name": "Field Voices",
+    "type": "Browsable",
+    "url": "https://fieldvoices.com/current_studies",
+    "domain": "fieldvoices.com",
+    "scraper": null
+  },
+  {
+    "id": "focus_group_panel",
+    "name": "Focus Group Panel",
+    "type": "Browsable",
+    "url": "https://focusgrouppanel.com/research-category/focus-group/",
+    "domain": "focusgrouppanel.com",
+    "scraper": null
+  },
+  {
+    "id": "focus_room",
+    "name": "Focus Room",
+    "type": "Browsable",
+    "url": "https://focusroom.com/active-studies/",
+    "domain": "focusroom.com",
+    "scraper": null
+  },
+  {
+    "id": "galloway_research",
+    "name": "Galloway Research",
+    "type": "Browsable",
+    "url": "https://www.questionspace.net/category/upcoming-studies/",
+    "domain": "questionspace.net",
+    "scraper": null
+  },
+  {
+    "id": "good_gamer_group",
+    "name": "Good Gamer Group",
+    "type": "Browsable",
+    "url": "https://goodgamergroup.com/available-studies/",
+    "domain": "goodgamergroup.com",
+    "scraper": null
+  },
+  {
+    "id": "ideo_design_research",
+    "name": "IDEO Design Research",
+    "type": "Browsable",
+    "url": "https://designresearch.ideo.com/opportunities",
+    "domain": "designresearch.ideo.com",
+    "scraper": null
+  },
+  {
+    "id": "ivy_exec",
+    "name": "Ivy Exec",
+    "type": "Browsable (login)",
+    "url": "https://ivyexec.com/jobs-and-research-studies-search?type=study",
+    "domain": "ivyexec.com",
+    "scraper": null
+  },
+  {
+    "id": "jackson_associates",
+    "name": "Jackson Associates",
+    "type": "Browsable (login)",
+    "url": "https://research.jacksonassociates.com/",
+    "domain": "research.jacksonassociates.com",
+    "scraper": null
+  },
+  {
+    "id": "jja_research",
+    "name": "JJA Research",
+    "type": "Browsable",
+    "url": "https://jjarecruiting.com/?post_type=project",
+    "domain": "jjarecruiting.com",
+    "scraper": null
+  },
+  {
+    "id": "kss_international",
+    "name": "KSS International",
+    "type": "Browsable (login)",
+    "url": "http://kernscheduling.com/",
+    "domain": "kernscheduling.com",
+    "scraper": null
+  },
+  {
+    "id": "l_e_research",
+    "name": "L&E Research",
+    "type": "Browsable (login)",
+    "url": "https://www.leopinions.com/",
+    "domain": "leopinions.com",
+    "scraper": null
+  },
+  {
+    "id": "leede_research",
+    "name": "Leede Research",
+    "type": "Browsable",
+    "url": "https://leedemn.com/join-our-database/available-studies/",
+    "domain": "leedemn.com",
+    "scraper": null
+  },
+  {
+    "id": "lees_focus",
+    "name": "Lees Focus",
+    "type": "Browsable",
+    "url": "https://leesfocusgroups.com/",
+    "domain": "leesfocusgroups.com",
+    "scraper": null
+  },
+  {
+    "id": "market_ease_market_eaze",
+    "name": "Market-Ease (Market Eaze)",
+    "type": "Browsable",
+    "url": "https://www.market-ease.com/about-the-respondent-hub",
+    "domain": "market-ease.com",
+    "scraper": null
+  },
+  {
+    "id": "marketforce",
+    "name": "MarketForce",
+    "type": "Browsable (login)",
+    "url": "https://shopper.marketforce.com/",
+    "domain": "shopper.marketforce.com",
+    "scraper": null
+  },
+  {
+    "id": "mediabarn_research",
+    "name": "Mediabarn Research",
+    "type": "Browsable",
+    "url": "https://www.mediabarnresearch.com/currentstudies/",
+    "domain": "mediabarnresearch.com",
+    "scraper": null
+  },
+  {
+    "id": "methinks",
+    "name": "MeThinks",
+    "type": "Browsable (login)",
+    "url": "https://www.methinks.io/thinker",
+    "domain": "methinks.io",
+    "scraper": null
+  },
+  {
+    "id": "mindswarms",
+    "name": "Mindswarms",
+    "type": "Browsable (login)",
+    "url": "https://app.mindswarms.com/sign_in",
+    "domain": "app.mindswarms.com",
+    "scraper": null
+  },
+  {
+    "id": "nashville_research_group",
+    "name": "Nashville Research Group",
+    "type": "Browsable",
+    "url": "https://www.nashvilleresearch.com/current-research-projects",
+    "domain": "nashvilleresearch.com",
+    "scraper": null
+  },
+  {
+    "id": "nationwide_research_recruiters",
+    "name": "Nationwide Research Recruiters",
+    "type": "Browsable",
+    "url": "https://www.nwrrs.com/focus-group-calendar.html",
+    "domain": "nwrrs.com",
+    "scraper": null
+  },
+  {
+    "id": "opinions_by_sync",
+    "name": "Opinions by Sync",
+    "type": "Browsable",
+    "url": "https://community.opinionsbysync.com/s/Jobsite",
+    "domain": "community.opinionsbysync.com",
+    "scraper": null
+  },
+  {
+    "id": "orman_guidance",
+    "name": "Orman Guidance",
+    "type": "Browsable",
+    "url": "https://ormanguidance.com/participate/projects/",
+    "domain": "ormanguidance.com",
+    "scraper": null
+  },
+  {
+    "id": "people_for_research",
+    "name": "People for Research",
+    "type": "Browsable (login)",
+    "url": "https://www.peopleforresearch.co.uk/participant/opportunities",
+    "domain": "peopleforresearch.co.uk",
+    "scraper": null
+  },
+  {
+    "id": "prc",
+    "name": "PRC",
+    "type": "Browsable",
+    "url": "https://www.prcmarketresearch.com/upcomingprojects",
+    "domain": "prcmarketresearch.com",
+    "scraper": "extractPRC"
+  },
+  {
+    "id": "private_jury",
+    "name": "Private Jury",
+    "type": "Browsable",
+    "url": "https://www.privatejury.com/",
+    "domain": "privatejury.com",
+    "scraper": null
+  },
+  {
+    "id": "probe_market_research",
+    "name": "Probe Market Research",
+    "type": "Browsable",
+    "url": "https://www.probemarket.com/available-studies/",
+    "domain": "probemarket.com",
+    "scraper": null
+  },
+  {
+    "id": "prolific",
+    "name": "Prolific",
+    "type": "Browsable (login)",
+    "url": "https://app.prolific.com/",
+    "domain": "app.prolific.com",
+    "scraper": null
+  },
+  {
+    "id": "pulse_labs",
+    "name": "Pulse Labs",
+    "type": "Browsable (login)",
+    "url": "https://app.pulselabs.ai/",
+    "domain": "app.pulselabs.ai",
+    "scraper": null
+  },
+  {
+    "id": "rare_patient_voice",
+    "name": "Rare Patient Voice",
+    "type": "Browsable",
+    "url": "https://rarepatientvoice.com/for-patients/study-opportunities/",
+    "domain": "rarepatientvoice.com",
+    "scraper": null
+  },
+  {
+    "id": "real_focus_group",
+    "name": "Real Focus Group",
+    "type": "Browsable",
+    "url": "https://realfocusgroup.com/upcoming/",
+    "domain": "realfocusgroup.com",
+    "scraper": null
+  },
+  {
+    "id": "respondent",
+    "name": "Respondent",
+    "type": "Browsable (login)",
+    "url": "https://app.respondent.io/respondents/v2/projects/browse",
+    "domain": "app.respondent.io",
+    "scraper": null
+  },
+  {
+    "id": "sago_schlesinger_focus_pointe_global",
+    "name": "SAGO (Schlesinger / Focus Pointe Global)",
+    "type": "Browsable (login)",
+    "url": "https://www.focusgroup.com/",
+    "domain": "focusgroup.com",
+    "scraper": null
+  },
+  {
+    "id": "savvy_cooperative",
+    "name": "Savvy Cooperative",
+    "type": "Browsable (login)",
+    "url": "https://apply.savvy.coop/",
+    "domain": "apply.savvy.coop",
+    "scraper": null
+  },
+  {
+    "id": "secret_shopper",
+    "name": "Secret Shopper",
+    "type": "Browsable (login)",
+    "url": "https://www.secretshopper.com/shoppers/shoppers",
+    "domain": "secretshopper.com",
+    "scraper": null
+  },
+  {
+    "id": "take_part_in_research",
+    "name": "Take Part in Research",
+    "type": "Browsable",
+    "url": "https://takepartinresearch.co.uk/current-projects/",
+    "domain": "takepartinresearch.co.uk",
+    "scraper": null
+  },
+  {
+    "id": "the_heard",
+    "name": "The Heard",
+    "type": "Browsable",
+    "url": "https://www.betheheard.com",
+    "domain": "betheheard.com",
+    "scraper": null
+  },
+  {
+    "id": "the_insighters",
+    "name": "The Insighters",
+    "type": "Browsable",
+    "url": "https://theinsighters.com/public-opportunities",
+    "domain": "theinsighters.com",
+    "scraper": null
+  },
+  {
+    "id": "the_social_question",
+    "name": "The Social Question",
+    "type": "Browsable",
+    "url": "https://www.the-socialq.com/open-studies",
+    "domain": "the-socialq.com",
+    "scraper": null
+  },
+  {
+    "id": "theoretics",
+    "name": "Theoretics",
+    "type": "Browsable",
+    "url": "https://www.theoretics.co/current-projects",
+    "domain": "theoretics.co",
+    "scraper": null
+  },
+  {
+    "id": "trendsource",
+    "name": "TrendSource",
+    "type": "Browsable (login)",
+    "url": "https://www.thesourceagents.com/",
+    "domain": "thesourceagents.com",
+    "scraper": null
+  },
+  {
+    "id": "user_interviews",
+    "name": "User Interviews",
+    "type": "Browsable",
+    "url": "https://www.userinterviews.com/studies",
+    "domain": "userinterviews.com",
+    "scraper": null
+  },
+  {
+    "id": "user_research_international",
+    "name": "User Research International",
+    "type": "Browsable (login)",
+    "url": "https://app.uriux.com/studies",
+    "domain": "app.uriux.com",
+    "scraper": null
+  },
+  {
+    "id": "utest",
+    "name": "uTest",
+    "type": "Browsable (login)",
+    "url": "https://www.utest.com/projects",
+    "domain": "utest.com",
+    "scraper": null
+  }
+]

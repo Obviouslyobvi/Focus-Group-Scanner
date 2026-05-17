@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Focus Group Scanner</title>
+<link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+<header>
+  <h1>Focus Group Scanner</h1>
+  <div class="actions">
+    <button id="scan-btn">Scan now</button>
+    <span id="last-scan" class="muted"></span>
+  </div>
+</header>
+
+<main>
+  <section class="summary" id="summary"></section>
+
+  <section class="controls">
+    <input id="search" type="search" placeholder="Search studies…" />
+    <select id="filter-status">
+      <option value="all">All status</option>
+      <option value="new">New (since last scan)</option>
+      <option value="active">Currently listed</option>
+      <option value="applied">Applied</option>
+      <option value="qualified">Qualified</option>
+      <option value="done">Done</option>
+      <option value="dismissed">Dismissed</option>
+    </select>
+    <select id="filter-source">
+      <option value="all">All sources</option>
+    </select>
+  </section>
+
+  <section class="studies">
+    <div id="study-list"></div>
+    <div id="empty" class="empty">No studies yet. Click "Scan now" to start.</div>
+  </section>
+
+  <section class="sources-panel">
+    <h2>Sources</h2>
+    <div id="source-list"></div>
+  </section>
+</main>
+
+<script type="module" src="dashboard.js"></script>
+</body>
+</html>

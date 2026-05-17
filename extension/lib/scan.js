@@ -1,0 +1,138 @@
+// Scan orchestrator. For each source with a registered extractor:
+//   1. open the studies URL in a background tab
+//   2. wait for load complete
+//   3. inject the extractor; receive an array of studies
+//   4. close the tab
+//   5. diff against last snapshot; update storage
+//
+// Sources without a scraper are skipped (status: "pending-extractor").
+
+import {
+  getStudies,
+  setStudies,
+  appendScanLog,
+  setLastScanAt,
+  studyKey,
+} from "./storage.js";
+import { EXTRACTORS } from "../scrapers/extractors.js";
+
+const TAB_LOAD_TIMEOUT_MS = 25_000;
+const POST_LOAD_DELAY_MS = 2_500;
+
+async function loadSources() {
+  const url = chrome.runtime.getURL("sources.json");
+  const res = await fetch(url);
+  return res.json();
+}
+
+function waitForTabComplete(tabId) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      chrome.tabs.onUpdated.removeListener(listener);
+      reject(new Error("tab load timeout"));
+    }, TAB_LOAD_TIMEOUT_MS);
+    function listener(updatedTabId, info) {
+      if (updatedTabId === tabId && info.status === "complete") {
+        clearTimeout(timer);
+        chrome.tabs.onUpdated.removeListener(listener);
+        setTimeout(resolve, POST_LOAD_DELAY_MS);
+      }
+    }
+    chrome.tabs.onUpdated.addListener(listener);
+  });
+}
+
+async function scrapeSource(source) {
+  const extractor = EXTRACTORS[source.scraper];
+  if (!extractor) return { status: "pending-extractor", count: 0 };
+
+  let tab;
+  try {
+    tab = await chrome.tabs.create({ url: source.url, active: false });
+    await waitForTabComplete(tab.id);
+    const [{ result } = {}] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: extractor,
+    });
+    const extracted = Array.isArray(result) ? result : [];
+    await mergeStudies(source, extracted);
+    return { status: "ok", count: extracted.length };
+  } catch (err) {
+    return { status: "error", count: 0, error: String(err?.message || err) };
+  } finally {
+    if (tab?.id) {
+      chrome.tabs.remove(tab.id).catch(() => {});
+    }
+  }
+}
+
+async function mergeStudies(source, extracted) {
+  const now = Date.now();
+  const existing = await getStudies(source.id);
+  const seenIds = new Set();
+  for (const s of extracted) {
+    if (!s.externalId) continue;
+    seenIds.add(s.externalId);
+    const prev = existing[s.externalId];
+    existing[s.externalId] = {
+      sourceId: source.id,
+      sourceName: source.name,
+      externalId: s.externalId,
+      title: s.title || "",
+      pay: s.pay || "",
+      duration: s.duration || "",
+      location: s.location || "",
+      studyDate: s.studyDate || "",
+      url: s.url || source.url,
+      firstSeenAt: prev?.firstSeenAt || now,
+      lastSeenAt: now,
+      isActive: true,
+    };
+  }
+  // Mark studies that vanished as inactive (don't delete — preserves history).
+  for (const [id, row] of Object.entries(existing)) {
+    if (!seenIds.has(id)) row.isActive = false;
+  }
+  await setStudies(source.id, existing);
+}
+
+export async function runScan({ onlyId } = {}) {
+  const sources = await loadSources();
+  const targets = onlyId ? sources.filter((s) => s.id === onlyId) : sources;
+  const startedAt = Date.now();
+  const results = [];
+  let newSinceLast = 0;
+  for (const source of targets) {
+    if (!source.scraper) {
+      results.push({ id: source.id, name: source.name, status: "pending-extractor", count: 0 });
+      continue;
+    }
+    const beforeIds = Object.keys(await getStudies(source.id));
+    const r = await scrapeSource(source);
+    const afterIds = Object.keys(await getStudies(source.id));
+    const added = afterIds.filter((id) => !beforeIds.includes(id)).length;
+    newSinceLast += added;
+    results.push({ id: source.id, name: source.name, added, ...r });
+  }
+  const finishedAt = Date.now();
+  const entry = { startedAt, finishedAt, sources: results, newSinceLast };
+  await appendScanLog(entry);
+  await setLastScanAt(finishedAt);
+  await updateBadge(newSinceLast);
+  if (newSinceLast > 0) {
+    chrome.notifications?.create({
+      type: "basic",
+      iconUrl: chrome.runtime.getURL("icons/icon128.png"),
+      title: "New studies",
+      message: `${newSinceLast} new study/studies since last scan`,
+    });
+  }
+  return entry;
+}
+
+async function updateBadge(count) {
+  await chrome.action.setBadgeText({ text: count > 0 ? String(count) : "" });
+  await chrome.action.setBadgeBackgroundColor({ color: "#16a34a" });
+}
+
+export { loadSources };
