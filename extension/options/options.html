@@ -67,8 +67,36 @@
       Estimated <strong>$9–$15 / month</strong> at 2 scans/day across ~48
       sites, using <code>claude-haiku-4-5</code>. You can also disable LLM
       extraction per-source from the dashboard if a site consistently returns
-      garbage.
+      garbage. (Optional — the default scraper needs no API key.)
     </p>
+  </div>
+
+  <div class="card">
+    <h2>Screener autofill profile</h2>
+    <p class="muted">
+      Saved demographic answers used by "Autofill this page". Each row matches
+      questions by <strong>keywords</strong> and picks the radio/checkbox/dropdown
+      option matching the <strong>answer</strong> or any of its <strong>aliases</strong>.
+      Build this by clicking "Learn from this page" on a screener you've filled,
+      or add rows here.
+    </p>
+    <table id="profile-table" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;">
+      <thead>
+        <tr style="text-align:left;color:#475569;">
+          <th style="padding:4px;">Label</th>
+          <th style="padding:4px;">Keywords (comma-sep)</th>
+          <th style="padding:4px;">Answer</th>
+          <th style="padding:4px;">Aliases (comma-sep)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="profile-rows"></tbody>
+    </table>
+    <div class="row">
+      <button id="add-row-btn" class="secondary">+ Add row</button>
+      <button id="save-profile-btn">Save profile</button>
+    </div>
+    <div class="status" id="profile-status"></div>
   </div>
 </div>
 <script type="module" src="options.js"></script>
