@@ -230,6 +230,7 @@ export async function autofillTool(args) {
   // never the same gap twice in a row.
   const DELAYS_MS = [1000, 2000, 5000];
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const rand = (a, b) => a + Math.random() * (b - a);
   let prevDelay = null;
   function nextDelay() {
     let d;
@@ -240,6 +241,59 @@ export async function autofillTool(args) {
     return d;
   }
 
+  // Mouse-movement simulation. Moves the synthetic cursor toward a target
+  // along an eased, jittered path, firing mousemove on whatever's under the
+  // path, then mouseover/mouseenter on the target. Note: synthetic events
+  // are isTrusted:false, so this defeats naive "did the mouse move?" checks
+  // but not advanced fingerprinting.
+  let lastX = null;
+  let lastY = null;
+  function dispatchMouse(type, x, y, target) {
+    const el = target || document.elementFromPoint(x, y) || document.body;
+    el.dispatchEvent(
+      new MouseEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        clientX: Math.round(x),
+        clientY: Math.round(y),
+      })
+    );
+  }
+  async function moveMouseTo(el) {
+    const rect = el.getBoundingClientRect();
+    if (!rect.width && !rect.height) return;
+    const tx = rect.left + rect.width * rand(0.3, 0.7);
+    const ty = rect.top + rect.height * rand(0.35, 0.65);
+    let cx = lastX == null ? tx + rand(-150, 150) : lastX;
+    let cy = lastY == null ? ty + rand(-120, 120) : lastY;
+    const steps = Math.floor(rand(6, 14));
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      // ease-in-out
+      const e = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      const x = cx + (tx - cx) * e + rand(-3, 3);
+      const y = cy + (ty - cy) * e + rand(-3, 3);
+      dispatchMouse("mousemove", x, y);
+      await sleep(rand(8, 35));
+    }
+    lastX = tx;
+    lastY = ty;
+    dispatchMouse("mouseover", tx, ty, el);
+    dispatchMouse("mouseenter", tx, ty, el);
+    dispatchMouse("mousemove", tx, ty, el);
+    return { x: tx, y: ty };
+  }
+  async function humanClick(el) {
+    const pos = await moveMouseTo(el);
+    if (pos) {
+      await sleep(rand(40, 120));
+      dispatchMouse("mousedown", pos.x, pos.y, el);
+      await sleep(rand(40, 110));
+      dispatchMouse("mouseup", pos.x, pos.y, el);
+    }
+  }
+
   let filled = 0;
   const delaysUsed = [];
   for (let i = 0; i < actions.length; i++) {
@@ -247,7 +301,9 @@ export async function autofillTool(args) {
     try {
       a.el.scrollIntoView({ block: "center", behavior: "smooth" });
     } catch {}
-    a.apply();
+    await sleep(rand(200, 500)); // let the scroll settle before measuring
+    await humanClick(a.el); // jittered approach + mousedown/up at the target
+    a.apply(); // sets checked/value and fires click/change + green highlight
     filled++;
     details.push({ question: a.question, answer: a.answer, status: "filled" });
     if (i < actions.length - 1) {
