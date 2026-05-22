@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Focus Group Filler",
+  "version": "0.1.0",
+  "description": "Remembers your demographic screener answers and auto-fills radio/checkbox/dropdown questions at a human pace.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8+gplwwaRdfV33Kj0GMSbH5DhrKo8qOWPYHaBFtvzjr449+2AlvnNjEaswPjLGU2Phe/BLyLi4CNDMPymWrEtnkX5VBRUiMtKZm84VD4jGH2jVBZ/A3dVTqptxGrwZtVwe4k7GtzAwTJV45YCAucDc074tUTs+jxeppJYI3PpDCo/dHy5907nKLhAl8cAfKif04K7L7GufCu6mh3j8AbR04qmLvMasa5ZVVJ8B55A7OfBv1b0lGFzvax/wgCZ39rrx1j+08sNfz+l+behbPQFrTCebhojtTgxm31Tof8O7E4Vga4MP96iYFKlBf0FPbVwoCKVEScHYn1I6PiYVAiDwIDAQAB",
+  "permissions": ["storage", "tabs", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

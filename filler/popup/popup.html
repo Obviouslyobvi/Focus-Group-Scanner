@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Focus Group Filler</title>
+<style>
+  body { font: 14px system-ui, sans-serif; width: 280px; margin: 0; padding: 12px; color: #0f172a; }
+  h1 { font-size: 14px; margin: 0 0 8px; font-weight: 600; }
+  button { display: block; width: 100%; padding: 8px; margin-top: 8px; border: 0; border-radius: 6px;
+           background: #0f172a; color: white; font-weight: 500; cursor: pointer; }
+  button.secondary { background: white; color: #0f172a; border: 1px solid #cbd5e1; }
+  button:disabled { opacity: 0.5; cursor: wait; }
+  .status { font-size: 12px; color: #475569; margin-top: 10px; min-height: 16px; }
+  .hint { font-size: 11px; color: #94a3b8; margin-top: 8px; line-height: 1.4; }
+</style>
+</head>
+<body>
+  <h1>Focus Group Filler</h1>
+  <button id="autofill-btn">Autofill this page</button>
+  <button id="learn-btn" class="secondary">Learn from this page</button>
+  <button id="options-btn" class="secondary">Manage saved answers</button>
+  <div class="status" id="status"></div>
+  <div class="hint">
+    Fill a screener once and click "Learn" to remember your answers. On the next
+    one, click "Autofill" — it matches questions by wording (not URL) and selects
+    your answers at a human pace. It never submits.
+  </div>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

@@ -72,39 +72,12 @@
   </div>
 
   <div class="card">
-    <h2>Screener autofill profile</h2>
+    <h2>Screener autofill</h2>
     <p class="muted">
-      Saved demographic answers used by "Autofill this page". Each row matches
-      questions by <strong>keywords</strong> and picks the radio/checkbox/dropdown
-      option matching the <strong>answer</strong> or any of its <strong>aliases</strong>.
-      Build this by clicking "Learn from this page" on a screener you've filled,
-      or add rows here.
+      Demographic screener autofill now lives in a separate extension,
+      <strong>Focus Group Filler</strong> (yellow icon). Install that to
+      remember and auto-fill radio/checkbox/dropdown answers.
     </p>
-    <table id="profile-table" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;">
-      <thead>
-        <tr style="text-align:left;color:#475569;">
-          <th style="padding:4px;">Label</th>
-          <th style="padding:4px;">Keywords (comma-sep)</th>
-          <th style="padding:4px;">Answer</th>
-          <th style="padding:4px;">Aliases (comma-sep)</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="profile-rows"></tbody>
-    </table>
-    <div class="row">
-      <button id="add-row-btn" class="secondary">+ Add row</button>
-      <button id="save-profile-btn">Save profile</button>
-      <button id="export-btn" class="secondary">Export backup</button>
-      <button id="import-btn" class="secondary">Import backup</button>
-      <input id="import-file" type="file" accept="application/json" style="display:none;" />
-    </div>
-    <p class="muted" style="margin-top:8px;">
-      Your profile is stored in Chrome sync storage (backed up to your Google
-      account), so it survives reinstalls and follows you across devices where
-      you're signed into Chrome. Export a JSON backup for extra safety.
-    </p>
-    <div class="status" id="profile-status"></div>
   </div>
 </div>
 <script type="module" src="options.js"></script>

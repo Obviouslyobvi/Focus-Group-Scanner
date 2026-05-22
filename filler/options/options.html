@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Focus Group Filler — Saved Answers</title>
+<style>
+  body { font: 14px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         color: #0f172a; background: #f8fafc; margin: 0; padding: 24px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 18px; margin: 0 0 16px; }
+  h2 { font-size: 14px; margin: 0 0 8px; }
+  .card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; }
+  button { border: 0; border-radius: 6px; background: #0f172a; color: white; padding: 7px 14px;
+           font-weight: 500; cursor: pointer; font-size: 13px; margin-right: 6px; }
+  button.secondary { background: white; color: #0f172a; border: 1px solid #cbd5e1; }
+  .row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .status { font-size: 12px; color: #475569; margin-top: 8px; min-height: 16px; }
+  .status.ok { color: #166534; }
+  .status.err { color: #991b1b; }
+  .muted { color: #64748b; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+  th { text-align: left; color: #475569; padding: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Focus Group Filler — Saved Answers</h1>
+  <div class="card">
+    <h2>Your demographic answers</h2>
+    <p class="muted">
+      Each row matches screener questions by <strong>keywords</strong> and picks
+      the radio/checkbox/dropdown option matching the <strong>answer</strong> or
+      any of its <strong>aliases</strong>. Build this by clicking "Learn from this
+      page" on a screener you've filled, or add rows here.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Label</th>
+          <th>Keywords (comma-sep)</th>
+          <th>Answer</th>
+          <th>Aliases (comma-sep)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="profile-rows"></tbody>
+    </table>
+    <div class="row">
+      <button id="add-row-btn" class="secondary">+ Add row</button>
+      <button id="save-profile-btn">Save</button>
+      <button id="export-btn" class="secondary">Export backup</button>
+      <button id="import-btn" class="secondary">Import backup</button>
+      <input id="import-file" type="file" accept="application/json" style="display:none;" />
+    </div>
+    <p class="muted" style="margin-top:8px;">
+      Saved in Chrome sync storage (backed up to your Google account), so it
+      survives reinstalls and follows you across devices where you're signed into
+      Chrome. Export a JSON backup for extra safety.
+    </p>
+    <div class="status" id="profile-status"></div>
+  </div>
+</div>
+<script type="module" src="options.js"></script>
+</body>
+</html>
