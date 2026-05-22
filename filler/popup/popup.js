@@ -25,7 +25,11 @@ $("learn-btn").addEventListener("click", () => {
     if (!resp?.ok) {
       $("status").textContent = "Error: " + (resp?.error || "unknown");
     } else if (!resp.found) {
-      $("status").textContent = "No answered questions found on this page.";
+      const d = resp.diag;
+      const detail = d
+        ? ` (saw ${d.checkboxesChecked}/${d.checkboxes} checkboxes checked, ${d.radiosChecked}/${d.radios} radios, ${d.selects} dropdowns, ${d.ariaCheckables} custom widgets)`
+        : "";
+      $("status").textContent = "No answered questions found on this page." + detail;
     } else {
       $("status").textContent = `Learned ${resp.found} answers (${resp.learned.added} new, ${resp.learned.updated} updated).`;
     }

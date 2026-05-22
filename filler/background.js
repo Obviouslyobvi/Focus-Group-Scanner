@@ -18,9 +18,9 @@ async function learnFromActiveTab() {
     args: [{ mode: "learn" }],
   });
   const pairs = result?.pairs || [];
-  if (!pairs.length) return { ok: true, learned: { added: 0, updated: 0 }, found: 0 };
+  if (!pairs.length) return { ok: true, learned: { added: 0, updated: 0 }, found: 0, diag: result?.diag };
   const learned = await learnEntries(pairs);
-  return { ok: true, learned, found: pairs.length };
+  return { ok: true, learned, found: pairs.length, diag: result?.diag };
 }
 
 async function autofillActiveTab() {

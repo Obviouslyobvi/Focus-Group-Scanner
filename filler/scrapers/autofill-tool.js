@@ -44,38 +44,77 @@ export async function autofillTool(args) {
       if (el && el.innerText.trim()) return el.innerText.trim();
     }
     const optionTexts = els.map(optionLabel).filter(Boolean);
-    let ancestor = first.parentElement;
-    for (let i = 0; i < 6 && ancestor; i++) {
-      let text = (ancestor.innerText || "").trim();
+    // Start from the smallest ancestor that contains every input in the group,
+    // then walk up until the leftover text (after removing option labels) looks
+    // like a question. Prefer text containing "?".
+    let node = first.parentElement;
+    while (node && !els.every((e) => node.contains(e))) node = node.parentElement;
+    if (!node) node = first.parentElement;
+    let candidate = "";
+    for (let i = 0; i < 5 && node; i++) {
+      let text = (node.innerText || "").trim();
       for (const ot of optionTexts) text = text.split(ot).join(" ");
       text = text.replace(/\s+/g, " ").trim();
-      if (text.length > 4 && text.length < 300) return text;
-      ancestor = ancestor.parentElement;
+      if (text.length > 4 && text.length < 400) {
+        if (text.includes("?")) return text;
+        if (!candidate) candidate = text;
+      }
+      node = node.parentElement;
     }
-    return "";
+    return candidate;
   }
 
-  function groupBy(inputs) {
-    const groups = {};
+  // Group radio/checkbox inputs into questions. Inputs that share a `name`
+  // form a group (classic radio group). Inputs with unique names — common for
+  // "select all that apply" checkboxes on survey engines — are clustered by
+  // their nearest shared ancestor instead.
+  function groupInputs(inputs) {
+    const byName = {};
+    const leftovers = [];
     inputs.forEach((el) => {
-      const name = el.name || el.id;
-      if (!name) return;
-      (groups[name] = groups[name] || []).push(el);
+      if (el.name) (byName[el.name] = byName[el.name] || []).push(el);
+      else leftovers.push(el);
     });
-    return Object.values(groups);
+    const groups = [];
+    for (const g of Object.values(byName)) {
+      if (g.length > 1) groups.push(g);
+      else leftovers.push(g[0]);
+    }
+    const used = new Set();
+    leftovers.forEach((el) => {
+      if (used.has(el)) return;
+      let anc = el.parentElement;
+      let best = null;
+      for (let i = 0; i < 8 && anc; i++) {
+        if (leftovers.filter((x) => anc.contains(x)).length >= 2) {
+          best = anc;
+          break;
+        }
+        anc = anc.parentElement;
+      }
+      if (best) {
+        const within = leftovers.filter((x) => best.contains(x) && !used.has(x));
+        within.forEach((x) => used.add(x));
+        groups.push(within);
+      } else {
+        used.add(el);
+        groups.push([el]);
+      }
+    });
+    return groups;
   }
 
   // ---- LEARN ----
   if (mode === "learn") {
     const pairs = [];
-    groupBy([...document.querySelectorAll('input[type="radio"]')]).forEach((els) => {
+    groupInputs([...document.querySelectorAll('input[type="radio"]')]).forEach((els) => {
       const checked = els.find((r) => r.checked);
       if (!checked) return;
       const q = questionText(els);
       const a = optionLabel(checked);
       if (q && a) pairs.push({ question: q, answer: a, type: "radio" });
     });
-    groupBy([...document.querySelectorAll('input[type="checkbox"]')]).forEach((els) => {
+    groupInputs([...document.querySelectorAll('input[type="checkbox"]')]).forEach((els) => {
       const checkedEls = els.filter((c) => c.checked);
       if (!checkedEls.length) return;
       const q = questionText(els);
@@ -93,7 +132,17 @@ export async function autofillTool(args) {
       const q = questionText([sel]);
       if (q) pairs.push({ question: q, answer: opt.text.trim(), type: "select" });
     });
-    return { pairs };
+    // Diagnostics so we can tell, when pairs is empty, whether the page has no
+    // native inputs (custom widgets) vs. inputs we failed to read.
+    const diag = {
+      radios: document.querySelectorAll('input[type="radio"]').length,
+      radiosChecked: document.querySelectorAll('input[type="radio"]:checked').length,
+      checkboxes: document.querySelectorAll('input[type="checkbox"]').length,
+      checkboxesChecked: document.querySelectorAll('input[type="checkbox"]:checked').length,
+      selects: document.querySelectorAll("select").length,
+      ariaCheckables: document.querySelectorAll('[role="radio"],[role="checkbox"]').length,
+    };
+    return { pairs, diag };
   }
 
   // ---- FILL ----
@@ -143,7 +192,7 @@ export async function autofillTool(args) {
   const details = [];
   const actions = []; // each: { apply: fn, el: Element, question, answer }
 
-  groupBy([...document.querySelectorAll('input[type="radio"]')]).forEach((els) => {
+  groupInputs([...document.querySelectorAll('input[type="radio"]')]).forEach((els) => {
     const q = questionText(els);
     const entry = matchEntry(q);
     if (!entry) return;
@@ -205,7 +254,7 @@ export async function autofillTool(args) {
     }
   });
 
-  groupBy([...document.querySelectorAll('input[type="checkbox"]')]).forEach((els) => {
+  groupInputs([...document.querySelectorAll('input[type="checkbox"]')]).forEach((els) => {
     const q = questionText(els);
     const entry = matchEntry(q);
     if (!entry) return;
