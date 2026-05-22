@@ -12,6 +12,11 @@
 
 const STORAGE_KEY = "demographics_profile";
 
+// The profile lives in chrome.storage.sync so it's backed up to the user's
+// Google account and survives reinstalls / new machines. sync has a ~100KB
+// total / 8KB-per-item budget, which is plenty for a demographic profile.
+// On first read we migrate any legacy data from chrome.storage.local.
+
 const STOPWORDS = new Set([
   "the", "is", "are", "was", "were", "a", "an", "of", "to", "in", "on", "for",
   "your", "you", "my", "i", "do", "does", "did", "what", "which", "how", "please",
@@ -35,12 +40,20 @@ export function extractKeywords(question) {
 }
 
 export async function getProfile() {
-  const obj = await chrome.storage.local.get(STORAGE_KEY);
-  return obj[STORAGE_KEY] || [];
+  const synced = await chrome.storage.sync.get(STORAGE_KEY);
+  if (synced[STORAGE_KEY]) return synced[STORAGE_KEY];
+  // One-time migration from the old local-storage location.
+  const local = await chrome.storage.local.get(STORAGE_KEY);
+  if (local[STORAGE_KEY]) {
+    await chrome.storage.sync.set({ [STORAGE_KEY]: local[STORAGE_KEY] });
+    await chrome.storage.local.remove(STORAGE_KEY);
+    return local[STORAGE_KEY];
+  }
+  return [];
 }
 
 export async function saveProfile(entries) {
-  await chrome.storage.local.set({ [STORAGE_KEY]: entries });
+  await chrome.storage.sync.set({ [STORAGE_KEY]: entries });
 }
 
 function uid() {

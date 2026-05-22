@@ -115,5 +115,35 @@ $("save-profile-btn").addEventListener("click", async () => {
   renderProfile();
 });
 
+$("export-btn").addEventListener("click", async () => {
+  const profile = await getProfile();
+  const blob = new Blob([JSON.stringify(profile, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `focus-group-scanner-profile-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+$("import-btn").addEventListener("click", () => $("import-file").click());
+$("import-file").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!Array.isArray(data)) throw new Error("Backup must be a JSON array");
+    await saveProfile(data);
+    $("profile-status").textContent = `Imported ${data.length} entries.`;
+    $("profile-status").className = "status ok";
+    renderProfile();
+  } catch (err) {
+    $("profile-status").textContent = "Import failed: " + (err?.message || err);
+    $("profile-status").className = "status err";
+  }
+  e.target.value = "";
+});
+
 renderProfile();
 refresh();

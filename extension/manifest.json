@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Focus Group Scanner",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "description": "Aggregates paid research study opportunities from recruiter sites.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4/9crHOqwle7mBzwUobILJA4m3WGEG0V1p1Rqxw76rnzo6g/VeuFQEjgI40pS8+AHnMoY8JdtTFRTFBS+D85huyLMeJ4oV/N45+WNnDbBkzOCho2rizMFtWGXlrv8Kq5bT2gBMA96ZxqY6Jc1Qs/nEqIAmfcfwqevGllK4NZUy7G+Qh5QibIbnXMCcv/+zTYRFQoYh8A2LN/DdTlauw12BJ8WTrQBzVxPL6mtPyQkJM998RrNw8HqlE2Rc1cUgVajQqKs7/W0KkLih/n6GHT8ybRWLBcQThFJUJYaRfX3xnhrbROhy+F9wTwV4GztG07NhvQOh3GYpF1by4q7neRFQIDAQAB",
   "permissions": ["alarms", "storage", "tabs", "tabGroups", "scripting", "notifications"],
   "host_permissions": ["<all_urls>"],
   "background": {

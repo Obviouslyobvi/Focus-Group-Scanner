@@ -95,7 +95,15 @@
     <div class="row">
       <button id="add-row-btn" class="secondary">+ Add row</button>
       <button id="save-profile-btn">Save profile</button>
+      <button id="export-btn" class="secondary">Export backup</button>
+      <button id="import-btn" class="secondary">Import backup</button>
+      <input id="import-file" type="file" accept="application/json" style="display:none;" />
     </div>
+    <p class="muted" style="margin-top:8px;">
+      Your profile is stored in Chrome sync storage (backed up to your Google
+      account), so it survives reinstalls and follows you across devices where
+      you're signed into Chrome. Export a JSON backup for extra safety.
+    </p>
     <div class="status" id="profile-status"></div>
   </div>
 </div>
