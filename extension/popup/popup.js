@@ -73,7 +73,7 @@ $("open-all-btn").addEventListener("click", () => openTabsRequest(false));
 $("autofill-btn").addEventListener("click", () => {
   const btn = $("autofill-btn");
   btn.disabled = true;
-  $("status").textContent = "Filling…";
+  $("status").textContent = "Filling at a human pace — takes a few seconds. You can close this popup.";
   chrome.runtime.sendMessage({ type: "autofill-page" }, (resp) => {
     btn.disabled = false;
     if (!resp?.ok) {

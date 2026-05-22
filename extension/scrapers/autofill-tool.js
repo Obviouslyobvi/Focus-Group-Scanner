@@ -7,7 +7,7 @@
 //   fill  -> selects matching answers, highlights them, returns
 //            { filled, highlightedUnmatched, details: [...] }
 
-export function autofillTool(args) {
+export async function autofillTool(args) {
   const mode = args.mode;
   const profile = args.profile || [];
 
@@ -136,9 +136,12 @@ export function autofillTool(args) {
     el.dispatchEvent(new Event(type, { bubbles: true }));
   }
 
-  let filled = 0;
+  // Gather fill actions first; do the yellow "couldn't match an option"
+  // highlights inline (those aren't selections, so no delay). Then execute
+  // the actual selections one at a time with a human-like random gap.
   let highlightedUnmatched = 0;
   const details = [];
+  const actions = []; // each: { apply: fn, el: Element, question, answer }
 
   groupBy([...document.querySelectorAll('input[type="radio"]')]).forEach((els) => {
     const q = questionText(els);
@@ -154,12 +157,17 @@ export function autofillTool(args) {
       }
     });
     if (bestEl && bestScore > 0) {
-      bestEl.checked = true;
-      fire(bestEl, "click");
-      fire(bestEl, "change");
-      highlight(bestEl.closest("label") || bestEl.parentElement, "#16a34a");
-      filled++;
-      details.push({ question: q, answer: optionLabel(bestEl), status: "filled" });
+      actions.push({
+        el: bestEl,
+        question: q,
+        answer: optionLabel(bestEl),
+        apply: () => {
+          bestEl.checked = true;
+          fire(bestEl, "click");
+          fire(bestEl, "change");
+          highlight(bestEl.closest("label") || bestEl.parentElement, "#16a34a");
+        },
+      });
     } else {
       highlight(els[0].closest("fieldset") || els[0].parentElement, "#f59e0b");
       highlightedUnmatched++;
@@ -181,11 +189,16 @@ export function autofillTool(args) {
       }
     });
     if (bestIdx >= 0 && bestScore > 0) {
-      sel.selectedIndex = bestIdx;
-      fire(sel, "change");
-      highlight(sel, "#16a34a");
-      filled++;
-      details.push({ question: q, answer: sel.options[bestIdx].text, status: "filled" });
+      actions.push({
+        el: sel,
+        question: q,
+        answer: sel.options[bestIdx].text,
+        apply: () => {
+          sel.selectedIndex = bestIdx;
+          fire(sel, "change");
+          highlight(sel, "#16a34a");
+        },
+      });
     } else {
       highlight(sel, "#f59e0b");
       highlightedUnmatched++;
@@ -196,21 +209,53 @@ export function autofillTool(args) {
     const q = questionText(els);
     const entry = matchEntry(q);
     if (!entry) return;
-    let any = false;
-    els.forEach((c) => {
-      if (optionScore(entry, optionLabel(c)) > 0) {
-        c.checked = true;
-        fire(c, "click");
-        fire(c, "change");
-        highlight(c.closest("label") || c.parentElement, "#16a34a");
-        any = true;
-      }
+    const toCheck = els.filter((c) => optionScore(entry, optionLabel(c)) > 0);
+    if (!toCheck.length) return;
+    actions.push({
+      el: toCheck[0],
+      question: q,
+      answer: toCheck.map(optionLabel).join(", "),
+      apply: () => {
+        toCheck.forEach((c) => {
+          c.checked = true;
+          fire(c, "click");
+          fire(c, "change");
+          highlight(c.closest("label") || c.parentElement, "#16a34a");
+        });
+      },
     });
-    if (any) {
-      filled++;
-      details.push({ question: q, status: "filled" });
-    }
   });
 
-  return { filled, highlightedUnmatched, details };
+  // Human-like pacing: wait a random 1s / 2s / 5s between each selection,
+  // never the same gap twice in a row.
+  const DELAYS_MS = [1000, 2000, 5000];
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  let prevDelay = null;
+  function nextDelay() {
+    let d;
+    do {
+      d = DELAYS_MS[Math.floor(Math.random() * DELAYS_MS.length)];
+    } while (d === prevDelay && DELAYS_MS.length > 1);
+    prevDelay = d;
+    return d;
+  }
+
+  let filled = 0;
+  const delaysUsed = [];
+  for (let i = 0; i < actions.length; i++) {
+    const a = actions[i];
+    try {
+      a.el.scrollIntoView({ block: "center", behavior: "smooth" });
+    } catch {}
+    a.apply();
+    filled++;
+    details.push({ question: a.question, answer: a.answer, status: "filled" });
+    if (i < actions.length - 1) {
+      const d = nextDelay();
+      delaysUsed.push(d);
+      await sleep(d);
+    }
+  }
+
+  return { filled, highlightedUnmatched, details, delaysUsed };
 }
