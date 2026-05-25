@@ -14,6 +14,30 @@ export async function autofillTool(args) {
   const norm = (s) =>
     (s || "").toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
 
+  // Query the light DOM *and* every open shadow root, recursively. Survey
+  // engines often render the question form inside a web component, where a
+  // plain document.querySelectorAll can't see the inputs.
+  function deepQueryAll(selector, root = document) {
+    const out = [];
+    const visit = (node) => {
+      if (!node || !node.querySelectorAll) return;
+      node.querySelectorAll(selector).forEach((el) => out.push(el));
+      node.querySelectorAll("*").forEach((el) => {
+        if (el.shadowRoot) visit(el.shadowRoot);
+      });
+    };
+    visit(root);
+    return out;
+  }
+
+  const isNativeInput = (el) => el.tagName === "INPUT";
+  // Radios/checkboxes can be native inputs or ARIA custom widgets (a <div
+  // role="radio">). Treat both, reading "checked" from the right place.
+  const radioEls = () => deepQueryAll('input[type="radio"], [role="radio"]');
+  const checkboxEls = () => deepQueryAll('input[type="checkbox"], [role="checkbox"]');
+  const isChecked = (el) =>
+    isNativeInput(el) ? el.checked : el.getAttribute("aria-checked") === "true";
+
   function optionLabel(input) {
     if (input.id) {
       const l = document.querySelector(`label[for="${CSS.escape(input.id)}"]`);
@@ -21,6 +45,15 @@ export async function autofillTool(args) {
     }
     const wrap = input.closest("label");
     if (wrap && wrap.innerText.trim()) return wrap.innerText.trim();
+    // Custom widgets (role="radio") hold their option text in their own content;
+    // the sibling-walk below is only correct for native inputs, whose label sits
+    // as a following sibling.
+    if (!isNativeInput(input)) {
+      const aria = input.getAttribute("aria-label");
+      if (aria && aria.trim()) return aria.trim();
+      const own = (input.innerText || "").trim();
+      if (own) return own;
+    }
     let sib = input.nextSibling;
     while (sib) {
       if (sib.nodeType === 3 && sib.textContent.trim()) return sib.textContent.trim();
@@ -107,15 +140,15 @@ export async function autofillTool(args) {
   // ---- LEARN ----
   if (mode === "learn") {
     const pairs = [];
-    groupInputs([...document.querySelectorAll('input[type="radio"]')]).forEach((els) => {
-      const checked = els.find((r) => r.checked);
+    groupInputs(radioEls()).forEach((els) => {
+      const checked = els.find(isChecked);
       if (!checked) return;
       const q = questionText(els);
       const a = optionLabel(checked);
       if (q && a) pairs.push({ question: q, answer: a, type: "radio" });
     });
-    groupInputs([...document.querySelectorAll('input[type="checkbox"]')]).forEach((els) => {
-      const checkedEls = els.filter((c) => c.checked);
+    groupInputs(checkboxEls()).forEach((els) => {
+      const checkedEls = els.filter(isChecked);
       if (!checkedEls.length) return;
       const q = questionText(els);
       checkedEls.forEach((c) => {
@@ -123,7 +156,7 @@ export async function autofillTool(args) {
         if (q && a) pairs.push({ question: q, answer: a, type: "checkbox" });
       });
     });
-    document.querySelectorAll("select").forEach((sel) => {
+    deepQueryAll("select").forEach((sel) => {
       if (sel.selectedIndex < 0) return;
       const opt = sel.options[sel.selectedIndex];
       if (!opt || !opt.text.trim()) return;
@@ -133,14 +166,17 @@ export async function autofillTool(args) {
       if (q) pairs.push({ question: q, answer: opt.text.trim(), type: "select" });
     });
     // Diagnostics so we can tell, when pairs is empty, whether the page has no
-    // native inputs (custom widgets) vs. inputs we failed to read.
+    // inputs at all vs. inputs we failed to read. Counts cover shadow DOM and
+    // ARIA custom widgets too.
+    const radios = radioEls();
+    const checkboxes = checkboxEls();
     const diag = {
-      radios: document.querySelectorAll('input[type="radio"]').length,
-      radiosChecked: document.querySelectorAll('input[type="radio"]:checked').length,
-      checkboxes: document.querySelectorAll('input[type="checkbox"]').length,
-      checkboxesChecked: document.querySelectorAll('input[type="checkbox"]:checked').length,
-      selects: document.querySelectorAll("select").length,
-      ariaCheckables: document.querySelectorAll('[role="radio"],[role="checkbox"]').length,
+      radios: radios.length,
+      radiosChecked: radios.filter(isChecked).length,
+      checkboxes: checkboxes.length,
+      checkboxesChecked: checkboxes.filter(isChecked).length,
+      selects: deepQueryAll("select").length,
+      ariaCheckables: deepQueryAll('[role="radio"],[role="checkbox"]').length,
     };
     return { pairs, diag };
   }
@@ -184,6 +220,30 @@ export async function autofillTool(args) {
   function fire(el, type) {
     el.dispatchEvent(new Event(type, { bubbles: true }));
   }
+  // Select an option, handling both native inputs and ARIA custom widgets.
+  function selectRadio(group, el) {
+    if (isNativeInput(el)) {
+      el.checked = true;
+      fire(el, "click");
+      fire(el, "change");
+    } else {
+      group.forEach((g) => {
+        if (!isNativeInput(g)) g.setAttribute("aria-checked", "false");
+      });
+      el.setAttribute("aria-checked", "true");
+      fire(el, "click");
+    }
+  }
+  function selectCheckbox(el) {
+    if (isNativeInput(el)) {
+      el.checked = true;
+      fire(el, "click");
+      fire(el, "change");
+    } else {
+      el.setAttribute("aria-checked", "true");
+      fire(el, "click");
+    }
+  }
 
   // Gather fill actions first; do the yellow "couldn't match an option"
   // highlights inline (those aren't selections, so no delay). Then execute
@@ -192,7 +252,7 @@ export async function autofillTool(args) {
   const details = [];
   const actions = []; // each: { apply: fn, el: Element, question, answer }
 
-  groupInputs([...document.querySelectorAll('input[type="radio"]')]).forEach((els) => {
+  groupInputs(radioEls()).forEach((els) => {
     const q = questionText(els);
     const entry = matchEntry(q);
     if (!entry) return;
@@ -211,20 +271,18 @@ export async function autofillTool(args) {
         question: q,
         answer: optionLabel(bestEl),
         apply: () => {
-          bestEl.checked = true;
-          fire(bestEl, "click");
-          fire(bestEl, "change");
-          highlight(bestEl.closest("label") || bestEl.parentElement, "#16a34a");
+          selectRadio(els, bestEl);
+          highlight(bestEl.closest("label") || bestEl.parentElement || bestEl, "#16a34a");
         },
       });
     } else {
-      highlight(els[0].closest("fieldset") || els[0].parentElement, "#f59e0b");
+      highlight(els[0].closest("fieldset") || els[0].parentElement || els[0], "#f59e0b");
       highlightedUnmatched++;
       details.push({ question: q, status: "no-option-match" });
     }
   });
 
-  document.querySelectorAll("select").forEach((sel) => {
+  deepQueryAll("select").forEach((sel) => {
     const q = questionText([sel]);
     const entry = matchEntry(q);
     if (!entry) return;
@@ -254,7 +312,7 @@ export async function autofillTool(args) {
     }
   });
 
-  groupInputs([...document.querySelectorAll('input[type="checkbox"]')]).forEach((els) => {
+  groupInputs(checkboxEls()).forEach((els) => {
     const q = questionText(els);
     const entry = matchEntry(q);
     if (!entry) return;
@@ -266,10 +324,8 @@ export async function autofillTool(args) {
       answer: toCheck.map(optionLabel).join(", "),
       apply: () => {
         toCheck.forEach((c) => {
-          c.checked = true;
-          fire(c, "click");
-          fire(c, "change");
-          highlight(c.closest("label") || c.parentElement, "#16a34a");
+          selectCheckbox(c);
+          highlight(c.closest("label") || c.parentElement || c, "#16a34a");
         });
       },
     });
